@@ -57,7 +57,7 @@ data class DepartureResponse(
     val tripId: String,
     val direction: String,
     val plannedWhen: String,
-    val when: String,
+    val `when`: String,
     val delay: Int?,
     val line: LineResponse,
     val platform: PlatformResponse?,

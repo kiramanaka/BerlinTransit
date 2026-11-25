@@ -52,7 +52,7 @@ class TransitRepository {
                             tripId = departureResponse.tripId,
                             direction = departureResponse.direction,
                             plannedTime = departureResponse.plannedWhen,
-                            departureTime = departureResponse.when,
+                            departureTime = departureResponse.`when`,
                             delay = departureResponse.delay,
                             lineName = departureResponse.line.name,
                             lineId = departureResponse.line.id,
