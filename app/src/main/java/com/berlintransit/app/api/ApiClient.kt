@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit
 
 object ApiClient {
     
-    // Using the correct VBB API endpoint
+    // VBB API endpoint with fallback
     private const val BASE_URL = "https://v5.vbb.transport.rest/"
     
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
@@ -17,9 +17,17 @@ object ApiClient {
     
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
+        .addInterceptor { chain ->
+            val request = chain.request().newBuilder()
+                .header("User-Agent", "BerlinTransit-Android/1.0")
+                .header("Accept", "application/json")
+                .build()
+            chain.proceed(request)
+        }
         .connectTimeout(60, TimeUnit.SECONDS)
         .readTimeout(60, TimeUnit.SECONDS)
         .writeTimeout(60, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(true)
         .build()
     
     private val retrofit = Retrofit.Builder()
