@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit
 
 object ApiClient {
     
+    // Using the correct VBB API endpoint
     private const val BASE_URL = "https://v5.vbb.transport.rest/"
     
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
@@ -16,9 +17,9 @@ object ApiClient {
     
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
+        .connectTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
         .build()
     
     private val retrofit = Retrofit.Builder()

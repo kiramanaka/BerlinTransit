@@ -96,17 +96,17 @@ class LocationService(private val context: Context) {
             val lastLocation = fusedLocationClient.lastLocation.await()
             if (lastLocation != null) {
                 val age = System.currentTimeMillis() - lastLocation.time
-                if (age < 60000) { // Less than 1 minute old
+                if (age < 120000) { // Less than 2 minutes old
                     return lastLocation
                 }
             }
             
             // Request fresh location with single update
             val locationRequest = LocationRequest.Builder(
-                Priority.PRIORITY_HIGH_ACCURACY,
-                5000L
+                Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+                10000L
             ).apply {
-                setMaxUpdateDelayMillis(10000L)
+                setMaxUpdateDelayMillis(15000L)
             }.build()
             
             // Use callback to get single update
@@ -121,22 +121,30 @@ class LocationService(private val context: Context) {
                         completable.complete(Unit)
                     }
                     // Remove updates after first result
-                    fusedLocationClient.removeLocationUpdates(this)
+                    try {
+                        fusedLocationClient.removeLocationUpdates(this)
+                    } catch (e: Exception) {
+                        // Ignore
+                    }
                 }
             }
             
-            fusedLocationClient.requestLocationUpdates(
-                locationRequest,
-                callback,
-                Looper.getMainLooper()
-            )
+            try {
+                fusedLocationClient.requestLocationUpdates(
+                    locationRequest,
+                    callback,
+                    Looper.getMainLooper()
+                )
+            } catch (e: Exception) {
+                return lastLocation
+            }
             
-            // Timeout after 15 seconds
-            kotlinx.coroutines.withTimeoutOrNull(15000) {
+            // Timeout after 20 seconds
+            kotlinx.coroutines.withTimeoutOrNull(20000) {
                 completable.await()
             }
             
-            resultLocation
+            resultLocation ?: lastLocation
             
         } catch (e: Exception) {
             null

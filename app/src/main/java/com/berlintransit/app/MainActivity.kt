@@ -135,6 +135,9 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val location = locationService.getCurrentLocation()
             if (location != null) {
+                // Show location in status
+                showStatus("Location: ${location.latitude}, ${location.longitude}")
+                
                 val result = transitRepository.getNearbyStations(
                     location.latitude,
                     location.longitude
@@ -144,7 +147,7 @@ class MainActivity : AppCompatActivity() {
                     onSuccess = { stations ->
                         if (stations.isNotEmpty()) {
                             currentStation = stations[0]
-                            stationNameText.text = stations[0].name
+                            stationNameText.text = "📍 ${stations[0].name}"
                             
                             // Save as preferred station
                             preferencesManager.savePreferredStation(
@@ -154,19 +157,20 @@ class MainActivity : AppCompatActivity() {
                                 stations[0].longitude
                             )
                             
+                            showStatus("Found station: ${stations[0].name}")
                             loadDepartures()
                         } else {
-                            showStatus("No nearby stations found")
+                            showStatus("No nearby stations found. Using Berlin Hbf.")
                             loadBerlinCentral()
                         }
                     },
                     onFailure = { error ->
-                        showStatus("Error finding stations: ${error.message}")
+                        showStatus("Error: ${error.message}. Using Berlin Hbf.")
                         loadBerlinCentral()
                     }
                 )
             } else {
-                showStatus("Could not get location. Using Berlin central station.")
+                showStatus("Location unavailable. Using Berlin Hbf.")
                 loadBerlinCentral()
             }
         }
@@ -214,9 +218,9 @@ class MainActivity : AppCompatActivity() {
                     swipeRefresh.isRefreshing = false
                     
                     if (departures.isEmpty()) {
-                        showStatus("No departures in the next 60 minutes")
+                        showStatus("⚠️ No departures in the next 60 minutes")
                     } else {
-                        showStatus("Updated: ${departures.size} departures")
+                        showStatus("✅ ${departures.size} departures loaded")
                     }
                     
                     // Update widget
@@ -225,7 +229,13 @@ class MainActivity : AppCompatActivity() {
                 onFailure = { error ->
                     hideLoading()
                     swipeRefresh.isRefreshing = false
-                    showStatus("Error loading departures: ${error.message}")
+                    val errorMsg = "❌ ${error.message}. Pull to refresh."
+                    showStatus(errorMsg)
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Error: ${error.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             )
         }

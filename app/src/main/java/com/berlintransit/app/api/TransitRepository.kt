@@ -21,6 +21,7 @@ class TransitRepository {
         withContext(Dispatchers.IO) {
             try {
                 val response = apiService.getNearbyStations(latitude, longitude, 5)
+                val errorBody = response.errorBody()?.string()
                 if (response.isSuccessful && response.body() != null) {
                     val stations = response.body()!!.map { stationResponse ->
                         Station(
@@ -32,10 +33,10 @@ class TransitRepository {
                     }
                     Result.success(stations)
                 } else {
-                    Result.failure(Exception("Failed to get stations: ${response.code()}"))
+                    Result.failure(Exception("API Error ${response.code()}: ${errorBody ?: response.message()}"))
                 }
             } catch (e: Exception) {
-                Result.failure(e)
+                Result.failure(Exception("Network error: ${e.message}"))
             }
         }
     
@@ -46,6 +47,7 @@ class TransitRepository {
         withContext(Dispatchers.IO) {
             try {
                 val response = apiService.getDepartures(stationId, 60, 20)
+                val errorBody = response.errorBody()?.string()
                 if (response.isSuccessful && response.body() != null) {
                     val departures = response.body()!!.departures.map { departureResponse ->
                         Departure(
@@ -62,10 +64,10 @@ class TransitRepository {
                     }
                     Result.success(departures)
                 } else {
-                    Result.failure(Exception("Failed to get departures: ${response.code()}"))
+                    Result.failure(Exception("API Error ${response.code()}: ${errorBody ?: response.message()}"))
                 }
             } catch (e: Exception) {
-                Result.failure(e)
+                Result.failure(Exception("Network error: ${e.message}"))
             }
         }
     
