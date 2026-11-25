@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#1976D2</color>
+    <color name="primary_dark">#1565C0</color>
+    <color name="primary_light">#42A5F5</color>
+    <color name="accent">#FF9800</color>
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="divider">#BDBDBD</color>
+    <color name="white">#FFFFFF</color>
+    <color name="background">#F5F5F5</color>
+    
+    <!-- Transport line colors -->
+    <color name="s_bahn">#00897B</color>
+    <color name="u_bahn">#00796B</color>
+    <color name="regional_red">#D32F2F</color>
+    <color name="regional_blue">#1976D2</color>
+    <color name="metro">#7B1FA2</color>
+    <color name="bus">#F57C00</color>
+    <color name="express_bus">#0288D1</color>
+    
+    <!-- Status colors -->
+    <color name="on_time">#388E3C</color>
+    <color name="delayed_minor">#F57C00</color>
+    <color name="delayed_major">#D32F2F</color>
+    <color name="cancelled">#D32F2F</color>
+</resources>
