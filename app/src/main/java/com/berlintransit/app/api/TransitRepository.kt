@@ -16,21 +16,24 @@ class TransitRepository {
     
     /**
      * Get nearby stations based on coordinates
+     * Tries multiple API endpoints for reliability
      */
     suspend fun getNearbyStations(latitude: Double, longitude: Double): Result<List<Station>> = 
         withContext(Dispatchers.IO) {
             var lastError: Exception? = null
             
-            // Retry up to 3 times for 503 errors
-            for (attempt in 1..3) {
+            // Try each API endpoint
+            for ((index, baseUrl) in ApiClient.API_ENDPOINTS.withIndex()) {
                 try {
-                    val response = apiService.getNearbyStations(latitude, longitude, 5)
+                    val service = ApiClient.getApiServiceForEndpoint(baseUrl)
+                    val response = service.getNearbyStations(latitude, longitude, 5)
                     
+                    // Retry logic for 503
                     if (response.code() == 503) {
-                        lastError = Exception("VBB API temporarily unavailable (503). Attempt $attempt/3")
-                        if (attempt < 3) {
-                            kotlinx.coroutines.delay(2000) // Wait 2 seconds before retry
-                            continue
+                        lastError = Exception("API endpoint ${index + 1} unavailable (503)")
+                        if (index < ApiClient.API_ENDPOINTS.size - 1) {
+                            kotlinx.coroutines.delay(1000)
+                            continue // Try next endpoint
                         }
                     }
                     
@@ -46,37 +49,45 @@ class TransitRepository {
                         }
                         return@withContext Result.success(stations)
                     } else {
-                        return@withContext Result.failure(Exception("API Error ${response.code()}: ${errorBody ?: response.message()}"))
+                        // If we get a real error (not 503), return it
+                        if (response.code() !in 500..599) {
+                            return@withContext Result.failure(Exception("API Error ${response.code()}: ${errorBody ?: response.message()}"))
+                        }
+                        lastError = Exception("API Error ${response.code()}")
                     }
                 } catch (e: Exception) {
                     lastError = Exception("Network error: ${e.message}")
-                    if (attempt < 3) {
-                        kotlinx.coroutines.delay(2000)
-                        continue
-                    }
+                    // Continue to next endpoint
+                }
+                
+                if (index < ApiClient.API_ENDPOINTS.size - 1) {
+                    kotlinx.coroutines.delay(500)
                 }
             }
             
-            Result.failure(lastError ?: Exception("Unknown error"))
+            Result.failure(lastError ?: Exception("All API endpoints failed"))
         }
     
     /**
      * Get departures for a specific station
+     * Tries multiple API endpoints for reliability
      */
     suspend fun getDepartures(stationId: String): Result<List<Departure>> = 
         withContext(Dispatchers.IO) {
             var lastError: Exception? = null
             
-            // Retry up to 3 times for 503 errors
-            for (attempt in 1..3) {
+            // Try each API endpoint
+            for ((index, baseUrl) in ApiClient.API_ENDPOINTS.withIndex()) {
                 try {
-                    val response = apiService.getDepartures(stationId, 60, 20)
+                    val service = ApiClient.getApiServiceForEndpoint(baseUrl)
+                    val response = service.getDepartures(stationId, 60, 20)
                     
+                    // Retry logic for 503
                     if (response.code() == 503) {
-                        lastError = Exception("VBB API temporarily unavailable (503). Attempt $attempt/3")
-                        if (attempt < 3) {
-                            kotlinx.coroutines.delay(2000) // Wait 2 seconds before retry
-                            continue
+                        lastError = Exception("API endpoint ${index + 1} unavailable (503)")
+                        if (index < ApiClient.API_ENDPOINTS.size - 1) {
+                            kotlinx.coroutines.delay(1000)
+                            continue // Try next endpoint
                         }
                     }
                     
@@ -97,18 +108,23 @@ class TransitRepository {
                         }
                         return@withContext Result.success(departures)
                     } else {
-                        return@withContext Result.failure(Exception("API Error ${response.code()}: ${errorBody ?: response.message()}"))
+                        // If we get a real error (not 503), return it
+                        if (response.code() !in 500..599) {
+                            return@withContext Result.failure(Exception("API Error ${response.code()}: ${errorBody ?: response.message()}"))
+                        }
+                        lastError = Exception("API Error ${response.code()}")
                     }
                 } catch (e: Exception) {
                     lastError = Exception("Network error: ${e.message}")
-                    if (attempt < 3) {
-                        kotlinx.coroutines.delay(2000)
-                        continue
-                    }
+                    // Continue to next endpoint
+                }
+                
+                if (index < ApiClient.API_ENDPOINTS.size - 1) {
+                    kotlinx.coroutines.delay(500)
                 }
             }
             
-            Result.failure(lastError ?: Exception("Unknown error"))
+            Result.failure(lastError ?: Exception("All API endpoints failed"))
         }
     
     /**
