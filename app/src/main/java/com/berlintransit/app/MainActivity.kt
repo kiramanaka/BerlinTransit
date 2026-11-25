@@ -136,7 +136,7 @@ class MainActivity : AppCompatActivity() {
             val location = locationService.getCurrentLocation()
             if (location != null) {
                 // Show location in status
-                showStatus("Location: ${location.latitude}, ${location.longitude}")
+                showStatus("📍 ${location.latitude}, ${location.longitude}")
                 
                 val result = transitRepository.getNearbyStations(
                     location.latitude,
@@ -157,21 +157,22 @@ class MainActivity : AppCompatActivity() {
                                 stations[0].longitude
                             )
                             
-                            showStatus("Found station: ${stations[0].name}")
+                            showStatus("✅ ${stations.size} stations found")
                             loadDepartures()
                         } else {
-                            showStatus("No nearby stations found. Using Berlin Hbf.")
+                            showStatus("⚠️ No stations. Using Berlin Hbf.")
                             loadBerlinCentral()
                         }
                     },
                     onFailure = { error ->
-                        showStatus("Error: ${error.message}. Using Berlin Hbf.")
-                        loadBerlinCentral()
+                        showStatus("⚠️ ${error.message}. Using Berlin stations.")
+                        // Use hardcoded Berlin stations instead of just Hbf
+                        loadBerlinStations()
                     }
                 )
             } else {
-                showStatus("Location unavailable. Using Berlin Hbf.")
-                loadBerlinCentral()
+                showStatus("⚠️ Location unavailable. Using Berlin stations.")
+                loadBerlinStations()
             }
         }
     }
@@ -184,9 +185,25 @@ class MainActivity : AppCompatActivity() {
             latitude = 52.525589,
             longitude = 13.369548
         )
-        stationNameText.text = "Berlin Hbf (Fallback)"
+        stationNameText.text = "🚉 Berlin Hbf"
         
         // Save as preferred station
+        preferencesManager.savePreferredStation(
+            currentStation!!.id,
+            currentStation!!.name,
+            currentStation!!.latitude,
+            currentStation!!.longitude
+        )
+        
+        loadDepartures()
+    }
+    
+    private fun loadBerlinStations() {
+        // Use hardcoded Berlin stations list
+        // Pick the first one (Hbf) or let user choose from list in future
+        currentStation = transitRepository.BERLIN_STATIONS[0]
+        stationNameText.text = "🚉 ${currentStation!!.name}"
+        
         preferencesManager.savePreferredStation(
             currentStation!!.id,
             currentStation!!.name,

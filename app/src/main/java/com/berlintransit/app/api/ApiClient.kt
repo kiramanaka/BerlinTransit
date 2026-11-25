@@ -8,14 +8,11 @@ import java.util.concurrent.TimeUnit
 
 object ApiClient {
     
-    // Multiple API endpoints for redundancy
-    // Primary: Official VBB API
-    // Fallback 1: Alternative mirror
-    // Fallback 2: Another mirror
+    // Working API endpoints for Berlin transit
+    // All use the same hafas-rest-api format
     val API_ENDPOINTS = listOf(
-        "https://v5.vbb.transport.rest/",
-        "https://v5.bvg.transport.rest/",  // Same API, different provider
-        "https://v5.db.transport.rest/"    // DB Navigator API (compatible)
+        "https://v5.vbb.transport.rest/",      // VBB (Berlin-Brandenburg) - Primary
+        "https://v5.bvg.transport.rest/"       // BVG (Berlin U-Bahn, S-Bahn, Bus, Tram)
     )
     
     private val loggingInterceptor = HttpLoggingInterceptor().apply {

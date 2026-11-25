@@ -1,10 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- HyperOS Dark Theme -->
     <style name="Theme.BerlinTransit" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Primary colors - softer for dark mode -->
         <item name="colorPrimary">@color/primary_light</item>
-        <item name="colorPrimaryDark">@color/primary</item>
-        <item name="colorAccent">@color/accent</item>
-        <item name="android:statusBarColor">@color/primary</item>
-        <item name="android:windowBackground">#121212</item>
+        <item name="colorPrimaryVariant">@color/primary</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+        
+        <!-- Secondary colors -->
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSecondaryVariant">@color/secondary_variant</item>
+        <item name="colorOnSecondary">@color/on_secondary</item>
+        
+        <!-- Surface colors - dark with slight tint -->
+        <item name="colorSurface">#1E1E1E</item>
+        <item name="colorOnSurface">#E8E8E8</item>
+        <item name="colorSurfaceVariant">#2D2D2D</item>
+        <item name="colorOnSurfaceVariant">#A0A0A0</item>
+        
+        <!-- Background -->
+        <item name="android:colorBackground">#121212</item>
+        <item name="android:statusBarColor">#1A1A1A</item>
+        <item name="android:navigationBarColor">#1E1E1E</item>
+        
+        <!-- HyperOS style - rounded corners -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.BerlinTransit.Small</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.BerlinTransit.Medium</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.BerlinTransit.Large</item>
     </style>
 </resources>
