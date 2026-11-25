@@ -9,5 +9,4 @@
     android:previewImage="@drawable/widget_preview"
     android:initialLayout="@layout/departure_widget"
     android:resizeMode="horizontal|vertical"
-    android:widgetCategory="home_screen"
-    android:previewPadding="8dp" />
+    android:widgetCategory="home_screen" />
