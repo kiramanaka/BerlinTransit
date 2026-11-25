@@ -40,4 +40,9 @@
     <color name="gradient_start">#0066CC</color>
     <color name="gradient_end">#00C6FF</color>
     <color name="gradient_accent">#FF6B35</color>
+    
+    <!-- Basic colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
 </resources>
