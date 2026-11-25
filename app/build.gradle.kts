@@ -60,6 +60,7 @@ dependencies {
     
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
     
     // Swipe refresh
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")

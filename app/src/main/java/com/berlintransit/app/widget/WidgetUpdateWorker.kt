@@ -8,6 +8,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.berlintransit.app.R
 import com.berlintransit.app.api.TransitRepository
 import com.berlintransit.app.model.Departure
 import kotlinx.coroutines.Dispatchers
