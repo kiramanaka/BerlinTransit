@@ -13,9 +13,18 @@ import com.berlintransit.app.ui.home.HomeScreen
 import com.berlintransit.app.ui.search.SearchScreen
 
 @Composable
-fun TransitApp(container: AppContainer) {
+fun TransitApp(
+    container: AppContainer,
+    initialStopId: String? = null,
+    initialStopName: String? = null
+) {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "home") {
+    val startDestination = if (initialStopId.isNullOrBlank()) {
+        "home"
+    } else {
+        boardRoute(initialStopId, initialStopName ?: initialStopId)
+    }
+    NavHost(navController = navController, startDestination = startDestination) {
         composable("home") {
             HomeScreen(
                 container = container,

@@ -1,14 +1,17 @@
 package com.berlintransit.app.widget
 
 import android.content.Context
+import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
+import androidx.glance.LocalContext
 import androidx.glance.LocalSize
 import androidx.glance.action.ActionParameters
 import androidx.glance.action.clickable
@@ -16,6 +19,7 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
+import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.Alignment
@@ -34,6 +38,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.berlintransit.app.BerlinTransitApplication
+import com.berlintransit.app.MainActivity
 import com.berlintransit.app.R
 import com.berlintransit.app.data.DepartureUi
 import com.berlintransit.app.data.formatUpdatedTimestamp
@@ -47,8 +52,11 @@ import com.berlintransit.app.ui.theme.TextPrimary
 import com.berlintransit.app.ui.theme.TextSecondary
 import com.berlintransit.app.ui.toUserMessage
 
+private val SeamColor = Color(0x8C000000)
+
 sealed interface WidgetUiState {
     data class Content(
+        val stationId: String,
         val stationName: String,
         val departures: List<DepartureUi>,
         val updatedAtMs: Long?
@@ -101,6 +109,7 @@ class DepartureWidget : GlanceAppWidget() {
         return try {
             val board = container.repository.departures(station.first)
             WidgetUiState.Content(
+                stationId = station.first,
                 stationName = station.second,
                 departures = board.departures.take(6),
                 updatedAtMs = board.realtimeDataUpdatedAtMs
@@ -113,28 +122,32 @@ class DepartureWidget : GlanceAppWidget() {
 
 @Composable
 private fun DepartureWidgetContent(state: WidgetUiState) {
+    val context = LocalContext.current
     val size = LocalSize.current
-    val rowCapacity = ((size.height.value - 44f) / 27f).toInt().coerceIn(1, 6)
-    val directionChars = ((size.width.value - 130f) / 7.5f).toInt().coerceIn(8, 36)
+    val rowCapacity = ((size.height.value - 58f) / 26f).toInt().coerceIn(1, 6)
+    val directionChars = ((size.width.value - 150f) / 7f).toInt().coerceIn(8, 36)
+    val nameChars = ((size.width.value - 110f) / 7.5f).toInt().coerceIn(8, 30)
     when (state) {
         is WidgetUiState.Content -> {
+            val openStation = Intent(context, MainActivity::class.java)
+                .putExtra(MainActivity.EXTRA_STOP_ID, state.stationId)
+                .putExtra(MainActivity.EXTRA_STOP_NAME, state.stationName)
             Column(
                 modifier = GlanceModifier
                     .fillMaxSize()
                     .background(ColorProvider(BoardBackground))
                     .padding(10.dp)
+                    .clickable(actionStartActivity(openStation))
             ) {
                 Row(
                     modifier = GlanceModifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = state.stationName.take(30),
-                        style = TextStyle(
-                            color = ColorProvider(TextPrimary),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        ),
+                    WidgetFlapTile(
+                        text = state.stationName.take(nameChars),
+                        textColor = TextPrimary,
+                        tileColor = FlapTile,
+                        fontSize = 13.sp,
                         modifier = GlanceModifier.defaultWeight()
                     )
                     Spacer(modifier = GlanceModifier.width(6.dp))
@@ -142,7 +155,7 @@ private fun DepartureWidgetContent(state: WidgetUiState) {
                         text = formatUpdatedTimestamp(state.updatedAtMs),
                         style = TextStyle(
                             color = ColorProvider(TextSecondary),
-                            fontSize = 10.sp
+                            fontSize = 9.sp
                         )
                     )
                     Spacer(modifier = GlanceModifier.width(6.dp))
@@ -161,6 +174,9 @@ private fun DepartureWidgetContent(state: WidgetUiState) {
                     .fillMaxSize()
                     .background(ColorProvider(BoardBackground))
                     .padding(10.dp)
+                    .clickable(
+                        actionStartActivity(Intent(context, MainActivity::class.java))
+                    )
             ) {
                 Row(
                     modifier = GlanceModifier.fillMaxWidth(),
@@ -181,13 +197,49 @@ private fun DepartureWidgetContent(state: WidgetUiState) {
 
 @Composable
 private fun RefreshButton() {
-    Image(
-        provider = ImageProvider(R.drawable.ic_widget_refresh),
-        contentDescription = "Refresh",
+    Box(
         modifier = GlanceModifier
-            .size(18.dp)
-            .clickable(actionRunCallback<RefreshWidgetAction>())
-    )
+            .size(30.dp)
+            .clickable(actionRunCallback<RefreshWidgetAction>()),
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            provider = ImageProvider(R.drawable.ic_widget_refresh),
+            contentDescription = "Refresh",
+            modifier = GlanceModifier.size(18.dp)
+        )
+    }
+}
+
+@Composable
+private fun WidgetFlapTile(
+    text: String,
+    textColor: Color,
+    tileColor: Color,
+    fontSize: TextUnit,
+    modifier: GlanceModifier = GlanceModifier
+) {
+    Box(
+        modifier = modifier
+            .background(ColorProvider(tileColor))
+            .padding(horizontal = 6.dp, vertical = 3.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            style = TextStyle(
+                color = ColorProvider(textColor),
+                fontSize = fontSize,
+                fontWeight = FontWeight.Bold
+            )
+        )
+        Spacer(
+            modifier = GlanceModifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(ColorProvider(SeamColor))
+        )
+    }
 }
 
 @Composable
@@ -232,53 +284,34 @@ private fun WidgetDepartureRow(departure: DepartureUi, directionChars: Int) {
         modifier = GlanceModifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = GlanceModifier
-                .background(ColorProvider(badgeBg))
-                .padding(horizontal = 5.dp, vertical = 2.dp)
-        ) {
-            Text(
-                text = departure.lineName.replace(" ", "").take(4),
-                style = TextStyle(
-                    color = ColorProvider(badgeFg),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            )
-        }
-        Spacer(modifier = GlanceModifier.width(6.dp))
-        Text(
-            text = departure.direction.uppercase().take(directionChars),
-            style = TextStyle(
-                color = ColorProvider(TextPrimary),
-                fontSize = 12.sp
-            ),
-            modifier = GlanceModifier.defaultWeight()
-        )
-        Spacer(modifier = GlanceModifier.width(6.dp))
-        Text(
-            text = departure.expectedTime ?: departure.plannedTime,
-            style = TextStyle(
-                color = ColorProvider(BvgYellow),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
-            )
+        WidgetFlapTile(
+            text = departure.lineName.replace(" ", "").take(4),
+            textColor = badgeFg,
+            tileColor = badgeBg,
+            fontSize = 11.sp
         )
         Spacer(modifier = GlanceModifier.width(4.dp))
-        Box(
-            modifier = GlanceModifier
-                .background(ColorProvider(delayTileColor))
-                .padding(horizontal = 4.dp, vertical = 1.dp)
-        ) {
-            Text(
-                text = delayLabel,
-                style = TextStyle(
-                    color = ColorProvider(delayTextColor),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            )
-        }
+        WidgetFlapTile(
+            text = departure.direction.uppercase().take(directionChars),
+            textColor = TextPrimary,
+            tileColor = FlapTile,
+            fontSize = 12.sp,
+            modifier = GlanceModifier.defaultWeight()
+        )
+        Spacer(modifier = GlanceModifier.width(4.dp))
+        WidgetFlapTile(
+            text = departure.expectedTime ?: departure.plannedTime,
+            textColor = BvgYellow,
+            tileColor = FlapTile,
+            fontSize = 12.sp
+        )
+        Spacer(modifier = GlanceModifier.width(4.dp))
+        WidgetFlapTile(
+            text = delayLabel,
+            textColor = delayTextColor,
+            tileColor = delayTileColor,
+            fontSize = 10.sp
+        )
     }
 }
 

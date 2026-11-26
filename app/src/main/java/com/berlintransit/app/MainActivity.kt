@@ -19,13 +19,19 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val container = (application as BerlinTransitApplication).container
+        val initialStopId = intent?.getStringExtra(EXTRA_STOP_ID)
+        val initialStopName = intent?.getStringExtra(EXTRA_STOP_NAME)
         setContent {
             BerlinTransitTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    TransitApp(container = container)
+                    TransitApp(
+                        container = container,
+                        initialStopId = initialStopId,
+                        initialStopName = initialStopName
+                    )
                 }
             }
         }
@@ -36,5 +42,10 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             runCatching { WidgetScheduler.refreshAllWidgets(applicationContext) }
         }
+    }
+
+    companion object {
+        const val EXTRA_STOP_ID = "stop_id"
+        const val EXTRA_STOP_NAME = "stop_name"
     }
 }
