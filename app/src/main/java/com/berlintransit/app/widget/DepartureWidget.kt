@@ -33,6 +33,7 @@ import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.width
+import androidx.glance.text.FontFamily
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
@@ -42,7 +43,6 @@ import com.berlintransit.app.MainActivity
 import com.berlintransit.app.R
 import com.berlintransit.app.data.DepartureUi
 import com.berlintransit.app.data.formatUpdatedTimestamp
-import com.berlintransit.app.ui.components.CondensedFontFamily
 import com.berlintransit.app.ui.components.lineBadgeColors
 import com.berlintransit.app.ui.theme.BoardBackground
 import com.berlintransit.app.ui.theme.BvgYellow
@@ -54,6 +54,7 @@ import com.berlintransit.app.ui.theme.TextSecondary
 import com.berlintransit.app.ui.toUserMessage
 
 private val SeamColor = Color(0x8C000000)
+private val CondensedFontFamily = FontFamily("sans-serif-condensed")
 
 sealed interface WidgetUiState {
     data class Content(
