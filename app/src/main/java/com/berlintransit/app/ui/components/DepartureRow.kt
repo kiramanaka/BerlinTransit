@@ -35,7 +35,7 @@ fun DepartureRow(
         val directionCellWidth = 19.dp
         val directionCellHeight = 27.dp
         val badgeWidth = 50.dp
-        val directionCells = (((maxWidth - badgeWidth - 10.dp) / directionCellWidth).value)
+        val directionCells = ((maxWidth - badgeWidth - 10.dp) / directionCellWidth)
             .toInt()
             .coerceIn(8, 26)
         val rowStartDelay = index * 45L
