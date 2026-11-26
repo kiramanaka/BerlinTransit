@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -25,12 +26,12 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.berlintransit.app.ui.theme.FlapAmber
 import com.berlintransit.app.ui.theme.FlapTile
 import com.berlintransit.app.ui.theme.FlapTileBorder
@@ -41,6 +42,9 @@ import java.time.format.DateTimeFormatter
 /**
  * Renders text like a classic split-flap departure board (Solari display).
  * Each character is a flap tile that flips when it changes.
+ *
+ * Glyph sizes are derived from the cell size in dp (font-scale independent),
+ * so characters never clip regardless of the user's system font size.
  */
 @Composable
 fun SplitFlapText(
@@ -48,10 +52,10 @@ fun SplitFlapText(
     cellWidth: Dp,
     cellHeight: Dp,
     modifier: Modifier = Modifier,
-    fontSize: TextUnit = TextUnit.Unspecified,
     textColor: Color = FlapAmber,
     tileColor: Color = FlapTile,
     tileBorderColor: Color = FlapTileBorder,
+    animateInitial: Boolean = false,
     startDelayMillis: Long = 0L,
     staggerPerCellMillis: Long = 35L,
     flipDurationMillis: Int = 450
@@ -62,10 +66,10 @@ fun SplitFlapText(
                 target = char,
                 cellWidth = cellWidth,
                 cellHeight = cellHeight,
-                fontSize = fontSize,
                 textColor = textColor,
                 tileColor = tileColor,
                 tileBorderColor = tileBorderColor,
+                animateInitial = animateInitial,
                 staggerMillis = startDelayMillis + index * staggerPerCellMillis,
                 flipDurationMillis = flipDurationMillis
             )
@@ -79,17 +83,17 @@ fun SplitFlapCell(
     cellWidth: Dp,
     cellHeight: Dp,
     modifier: Modifier = Modifier,
-    fontSize: TextUnit = TextUnit.Unspecified,
     textColor: Color = FlapAmber,
     tileColor: Color = FlapTile,
     tileBorderColor: Color = FlapTileBorder,
+    animateInitial: Boolean = false,
     staggerMillis: Long = 0L,
     flipDurationMillis: Int = 450
 ) {
-    val resolvedFontSize =
-        if (fontSize == TextUnit.Unspecified) (cellHeight.value * 0.58f).sp else fontSize
-    var displayed by remember { mutableStateOf(' ') }
-    val progress = remember { Animatable(0f) }
+    val localDensity = LocalDensity.current
+    val fontSize = with(localDensity) { (cellHeight * 0.62f).toSp() }
+    var displayed by remember { mutableStateOf(if (animateInitial) ' ' else target) }
+    val progress = remember { Animatable(if (animateInitial) 0f else 1f) }
 
     LaunchedEffect(target) {
         if (target != displayed) {
@@ -112,17 +116,24 @@ fun SplitFlapCell(
     ) {
         when {
             p >= 1f -> {
-                HalfChar(target, cellWidth, cellHeight, resolvedFontSize, textColor, topHalf = true)
-                HalfChar(target, cellWidth, cellHeight, resolvedFontSize, textColor, topHalf = false)
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = target.toString(),
+                        color = textColor,
+                        fontSize = fontSize,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
             p < 0.5f -> {
-                HalfChar(target, cellWidth, cellHeight, resolvedFontSize, textColor, topHalf = true)
-                HalfChar(displayed, cellWidth, cellHeight, resolvedFontSize, textColor, topHalf = false)
+                HalfChar(target, cellWidth, cellHeight, fontSize, textColor, topHalf = true)
+                HalfChar(displayed, cellWidth, cellHeight, fontSize, textColor, topHalf = false)
                 HalfChar(
                     displayed,
                     cellWidth,
                     cellHeight,
-                    resolvedFontSize,
+                    fontSize,
                     textColor,
                     topHalf = true,
                     modifier = Modifier.graphicsLayer {
@@ -133,12 +144,12 @@ fun SplitFlapCell(
                 )
             }
             else -> {
-                HalfChar(target, cellWidth, cellHeight, resolvedFontSize, textColor, topHalf = true)
+                HalfChar(target, cellWidth, cellHeight, fontSize, textColor, topHalf = true)
                 HalfChar(
                     target,
                     cellWidth,
                     cellHeight,
-                    resolvedFontSize,
+                    fontSize,
                     textColor,
                     topHalf = false,
                     modifier = Modifier.graphicsLayer {
@@ -207,7 +218,6 @@ fun ClockFlap(modifier: Modifier = Modifier) {
         text = text,
         cellWidth = 15.dp,
         cellHeight = 21.dp,
-        fontSize = 13.sp,
         staggerPerCellMillis = 0L,
         flipDurationMillis = 380,
         modifier = modifier

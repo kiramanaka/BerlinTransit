@@ -1,6 +1,5 @@
 package com.berlintransit.app.ui.board
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -43,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.berlintransit.app.AppContainer
 import com.berlintransit.app.data.formatUpdatedTimestamp
+import com.berlintransit.app.ui.components.ClockFlap
 import com.berlintransit.app.ui.components.DepartureRow
 import com.berlintransit.app.ui.components.ErrorCard
 import com.berlintransit.app.ui.components.SplitFlapText
@@ -123,34 +123,32 @@ fun BoardScreen(
             )
         }
     ) { innerPadding ->
-        Column(
+        BoxWithConstraints(
             Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            BoardHeader(stopName = stopName)
-            when {
-                state.isLoading && state.departures.isEmpty() -> {
-                    LoadingBoard()
-                }
-                state.error != null && state.departures.isEmpty() -> {
-                    ErrorCard(
-                        message = state.error ?: "",
-                        onRetry = { viewModel.refresh() },
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
-                state.departures.isEmpty() -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "No departures in the next 60 minutes",
-                            color = TextSecondary,
-                            fontSize = 13.sp
+            val headerCells = ((maxWidth - 24.dp) / 19.dp).toInt().coerceAtLeast(8)
+            val directionCells = ((maxWidth - 84.dp) / 19.dp).toInt().coerceIn(8, 26)
+            Column(Modifier.fillMaxSize()) {
+                BoardHeader(stopName = stopName, cells = headerCells)
+                when {
+                    state.isLoading && state.departures.isEmpty() -> {
+                        LoadingBoard()
+                    }
+                    state.error != null && state.departures.isEmpty() -> {
+                        ErrorCard(
+                            message = state.error ?: "",
+                            onRetry = { viewModel.refresh() },
+                            modifier = Modifier.padding(16.dp)
                         )
                     }
-                }
-                else -> {
-                    DepartureList(state = state)
+                    state.departures.isEmpty() -> {
+                        EmptyBoard()
+                    }
+                    else -> {
+                        DepartureList(state = state, directionCells = directionCells)
+                    }
                 }
             }
         }
@@ -158,23 +156,21 @@ fun BoardScreen(
 }
 
 @Composable
-private fun BoardHeader(stopName: String) {
+private fun BoardHeader(stopName: String, cells: Int) {
     Column(
         Modifier
             .fillMaxWidth()
             .padding(top = 14.dp)
     ) {
-        BoxWithConstraints(Modifier.fillMaxWidth()) {
-            val cells = ((maxWidth - 24.dp) / 19.dp).toInt().coerceAtLeast(8)
-            SplitFlapText(
-                text = stopName.uppercase().let { it.take(cells).padEnd(cells, ' ') },
-                cellWidth = 19.dp,
-                cellHeight = 27.dp,
-                startDelayMillis = 40L,
-                staggerPerCellMillis = 40L,
-                modifier = Modifier.padding(horizontal = 12.dp)
-            )
-        }
+        SplitFlapText(
+            text = stopName.uppercase().let { it.take(cells).padEnd(cells, ' ') },
+            cellWidth = 19.dp,
+            cellHeight = 27.dp,
+            animateInitial = true,
+            startDelayMillis = 40L,
+            staggerPerCellMillis = 40L,
+            modifier = Modifier.padding(horizontal = 12.dp)
+        )
         Row(
             Modifier
                 .fillMaxWidth()
@@ -189,7 +185,7 @@ private fun BoardHeader(stopName: String) {
                 letterSpacing = 2.sp
             )
             Spacer(Modifier.weight(1f))
-            com.berlintransit.app.ui.components.ClockFlap()
+            ClockFlap()
         }
     }
 }
@@ -208,10 +204,25 @@ private fun LoadingBoard() {
 }
 
 @Composable
-private fun DepartureList(state: BoardViewModel.BoardUiState) {
+private fun EmptyBoard() {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(
+            text = "No departures in the next 60 minutes",
+            color = TextSecondary,
+            fontSize = 13.sp
+        )
+    }
+}
+
+@Composable
+private fun DepartureList(state: BoardViewModel.BoardUiState, directionCells: Int) {
     LazyColumn(Modifier.fillMaxSize()) {
         itemsIndexed(state.departures, key = { _, departure -> departure.key }) { index, departure ->
-            DepartureRow(departure = departure, index = index)
+            DepartureRow(
+                departure = departure,
+                index = index,
+                directionCells = directionCells
+            )
             if (index < state.departures.lastIndex) {
                 HorizontalDivider(
                     color = Color(0xFF191B20),

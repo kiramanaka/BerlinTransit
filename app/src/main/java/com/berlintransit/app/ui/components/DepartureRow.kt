@@ -1,6 +1,5 @@
 package com.berlintransit.app.ui.components
 
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,77 +24,80 @@ import com.berlintransit.app.ui.theme.TextSecondary
 fun DepartureRow(
     departure: DepartureUi,
     index: Int,
+    directionCells: Int,
     modifier: Modifier = Modifier
 ) {
-    BoxWithConstraints(
+    val rowStartDelay = index * 45L
+    Column(
         modifier
             .fillMaxWidth()
             .padding(start = 12.dp, end = 12.dp, top = 7.dp, bottom = 7.dp)
     ) {
-        val directionCellWidth = 19.dp
-        val directionCellHeight = 27.dp
-        val badgeWidth = 50.dp
-        val directionCells = ((maxWidth - badgeWidth - 10.dp) / directionCellWidth)
-            .toInt()
-            .coerceIn(8, 26)
-        val rowStartDelay = index * 45L
-
-        Column {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                LineBadge(
-                    lineName = departure.lineName,
-                    lineColorBg = departure.lineColorBg,
-                    lineColorFg = departure.lineColorFg
-                )
-                Spacer(Modifier.width(10.dp))
-                SplitFlapText(
-                    text = departure.direction.uppercase()
-                        .let { it.take(directionCells).padEnd(directionCells, ' ') },
-                    cellWidth = directionCellWidth,
-                    cellHeight = directionCellHeight,
-                    startDelayMillis = rowStartDelay,
-                    staggerPerCellMillis = 28L
-                )
-            }
-            Spacer(Modifier.height(6.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                SplitFlapText(
-                    text = departure.expectedTime ?: departure.plannedTime,
-                    cellWidth = 16.dp,
-                    cellHeight = 22.dp,
-                    fontSize = 14.sp,
-                    startDelayMillis = rowStartDelay,
-                    staggerPerCellMillis = 28L
-                )
-                Spacer(Modifier.width(8.dp))
-                StatusChip(departure = departure)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            LineBadge(
+                lineName = departure.lineName,
+                lineColorBg = departure.lineColorBg,
+                lineColorFg = departure.lineColorFg
+            )
+            Spacer(Modifier.width(10.dp))
+            SplitFlapText(
+                text = boardDirectionText(departure.direction, directionCells),
+                cellWidth = 19.dp,
+                cellHeight = 27.dp,
+                staggerPerCellMillis = 28L,
+                startDelayMillis = rowStartDelay
+            )
+        }
+        Spacer(Modifier.height(6.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            SplitFlapText(
+                text = departure.expectedTime ?: departure.plannedTime,
+                cellWidth = 16.dp,
+                cellHeight = 22.dp,
+                staggerPerCellMillis = 28L,
+                startDelayMillis = rowStartDelay
+            )
+            Spacer(Modifier.width(8.dp))
+            StatusChip(departure = departure)
+            Text(
+                text = "planned " + departure.plannedTime,
+                color = TextSecondary,
+                fontSize = 11.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textDecoration = if (departure.isCancelled) TextDecoration.LineThrough else null,
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .padding(start = 8.dp)
+            )
+            if (!departure.platform.isNullOrBlank()) {
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    text = "planned " + departure.plannedTime,
+                    text = "Gl. ${departure.platform}",
                     color = TextSecondary,
                     fontSize = 11.sp,
-                    textDecoration = if (departure.isCancelled) TextDecoration.LineThrough else null
-                )
-                Spacer(Modifier.weight(1f))
-                if (!departure.platform.isNullOrBlank()) {
-                    Text(
-                        text = "Gl. ${departure.platform}",
-                        color = TextSecondary,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            }
-            if (!departure.remark.isNullOrBlank()) {
-                Spacer(Modifier.height(3.dp))
-                Text(
-                    text = departure.remark,
-                    color = Color(0xFFB9BEC6),
-                    fontSize = 10.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
+        if (!departure.remark.isNullOrBlank()) {
+            Spacer(Modifier.height(3.dp))
+            Text(
+                text = departure.remark,
+                color = Color(0xFFB9BEC6),
+                fontSize = 10.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
+}
+
+private fun boardDirectionText(direction: String, cells: Int): String {
+    val stripped = direction
+        .removePrefix("S+U ")
+        .removePrefix("S ")
+        .removePrefix("U ")
+        .removePrefix("M ")
+    return stripped.uppercase().take(cells).padEnd(cells, ' ')
 }
