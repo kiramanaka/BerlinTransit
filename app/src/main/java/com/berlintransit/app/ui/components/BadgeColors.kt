@@ -1,11 +1,6 @@
 package com.berlintransit.app.ui.components
 
-import android.graphics.Typeface
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
-
-val CondensedFontFamily =
-    FontFamily(Typeface.create("sans-serif-condensed", Typeface.BOLD))
 
 // Official BVG corporate colors.
 // Source: https://de.wikipedia.org/wiki/Berliner_Verkehrsbetriebe#Farben
