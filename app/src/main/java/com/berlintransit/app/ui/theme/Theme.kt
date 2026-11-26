@@ -16,6 +16,8 @@ val TextSecondary = Color(0xFF9AA0A6)
 val StatusGreen = Color(0xFF57B55D)
 val StatusRed = Color(0xFFFF5C5C)
 val StatusBlue = Color(0xFF6AA6FF)
+val DelayGreen = Color(0xFF2E7D32)
+val DelayRed = Color(0xFFC62828)
 
 private val BoardColorScheme = darkColorScheme(
     primary = BvgYellow,

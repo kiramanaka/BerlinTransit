@@ -60,6 +60,10 @@ fun ApiDeparture.toDepartureUi(now: OffsetDateTime, zone: ZoneId): DepartureUi? 
         isCancelled = cancelled,
         isRealtime = realtime,
         platform = platform ?: plannedPlatform,
+        plannedPlatform = plannedPlatform,
+        isPlatformChanged = platform != null &&
+            plannedPlatform != null &&
+            platform != plannedPlatform,
         remark = remarks
             ?.firstOrNull { (it.type == "warning" || it.type == "status") && !it.text.isNullOrBlank() }
             ?.text
@@ -69,20 +73,33 @@ fun ApiDeparture.toDepartureUi(now: OffsetDateTime, zone: ZoneId): DepartureUi? 
 }
 
 const val PAST_DEPARTURE_GRACE_SECONDS = 90L
-const val REMARK_MAX_LENGTH = 160
+const val REMARK_MAX_LENGTH = 400
 
 fun roundDelayMinutes(delaySeconds: Int): Int =
     if (delaySeconds >= 0) (delaySeconds + 30) / 60 else (delaySeconds - 30) / 60
 
-fun String.stripHtml(): String = replace(Regex("<[^>]*>"), " ")
-    .replace("&amp;", "&")
-    .replace("&lt;", "<")
-    .replace("&gt;", ">")
-    .replace("&quot;", "\"")
-    .replace("&#39;", "'")
-    .replace("&nbsp;", " ")
-    .replace(Regex("\\s+"), " ")
-    .trim()
+fun String.stripHtml(): String {
+    val noTags = replace(Regex("<[^>]*>"), " ")
+    val decoded = noTags.replace(Regex("&(#x[0-9a-fA-F]+|#[0-9]+|amp|lt|gt|quot|apos|nbsp);")) { match ->
+        val entity = match.groupValues[1]
+        when {
+            entity == "amp" -> "&"
+            entity == "lt" -> "<"
+            entity == "gt" -> ">"
+            entity == "quot" -> "\""
+            entity == "apos" -> "'"
+            entity == "nbsp" -> " "
+            entity.startsWith("#x") ->
+                runCatching { entity.substring(2).toInt(16).toChar().toString() }
+                    .getOrDefault(match.value)
+            entity.startsWith("#") ->
+                runCatching { entity.substring(1).toInt().toChar().toString() }
+                    .getOrDefault(match.value)
+            else -> match.value
+        }
+    }
+    return decoded.replace(Regex("\\s+"), " ").trim()
+}
 
 fun formatUpdatedTimestamp(epochMs: Long?): String =
     if (epochMs == null || epochMs <= 0L) {

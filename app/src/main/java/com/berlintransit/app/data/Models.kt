@@ -40,6 +40,8 @@ data class DepartureUi(
     val isCancelled: Boolean,
     val isRealtime: Boolean,
     val platform: String?,
+    val plannedPlatform: String?,
+    val isPlatformChanged: Boolean,
     val remark: String?
 )
 

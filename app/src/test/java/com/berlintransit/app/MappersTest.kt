@@ -54,6 +54,36 @@ class MappersTest {
     }
 
     @Test
+    fun `stripHtml decodes numeric character references`() {
+        val input = "Straße &#60;&#62; Zwischenebene &#60;&#62; Bahnsteig U5 &#x3C;hex&#x3E;"
+        val result = input.stripHtml()
+        assertTrue(result.contains("<>"))
+        assertTrue(result.contains("<hex>"))
+        assertFalse(result.contains("&#"))
+    }
+
+    @Test
+    fun `platform change is detected`() {
+        val api = ApiDeparture(
+            plannedWhen = "2026-11-26T12:30:00+01:00",
+            platform = "4",
+            plannedPlatform = "3",
+            line = ApiLine(name = "RE7", product = "regional")
+        )
+        val ui = api.toDepartureUi(now, zone)!!
+        assertTrue(ui.isPlatformChanged)
+        assertEquals("4", ui.platform)
+        assertEquals("3", ui.plannedPlatform)
+
+        val unchanged = api.copy(platform = "3").toDepartureUi(now, zone)!!
+        assertFalse(unchanged.isPlatformChanged)
+
+        val noRealtime = api.copy(platform = null).toDepartureUi(now, zone)!!
+        assertFalse(noRealtime.isPlatformChanged)
+        assertEquals("3", noRealtime.platform)
+    }
+
+    @Test
     fun `delayed departure maps planned and expected times`() {
         val api = ApiDeparture(
             tripId = "1|3406|0|86|25112026",

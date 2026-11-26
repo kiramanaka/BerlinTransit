@@ -265,7 +265,14 @@ private fun DepartureDetailsSheet(
             DetailRow(label = "Planned", value = departure.plannedTime)
             DetailRow(label = "Expected", value = departure.expectedTime ?: "—")
             DetailRow(label = "Status", value = departure.statusDescription())
-            DetailRow(label = "Platform", value = departure.platform ?: "—")
+            DetailRow(
+                label = "Platform",
+                value = if (departure.isPlatformChanged && !departure.plannedPlatform.isNullOrBlank()) {
+                    "${departure.platform ?: "—"} (planned ${departure.plannedPlatform})"
+                } else {
+                    departure.platform ?: "—"
+                }
+            )
             if (!departure.remark.isNullOrBlank()) {
                 Spacer(Modifier.height(12.dp))
                 Text(

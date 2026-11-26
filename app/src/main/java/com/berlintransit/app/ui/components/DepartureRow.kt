@@ -20,8 +20,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.berlintransit.app.data.DepartureUi
 import com.berlintransit.app.ui.theme.BvgYellow
-import com.berlintransit.app.ui.theme.StatusBlue
-import com.berlintransit.app.ui.theme.StatusGreen
+import com.berlintransit.app.ui.theme.DelayGreen
+import com.berlintransit.app.ui.theme.DelayRed
+import com.berlintransit.app.ui.theme.FlapTile
 import com.berlintransit.app.ui.theme.StatusRed
 import com.berlintransit.app.ui.theme.TextPrimary
 import com.berlintransit.app.ui.theme.TextSecondary
@@ -44,31 +45,32 @@ fun DepartureRow(
     val timeColor = if (departure.isCancelled) StatusRed else BvgYellow
 
     val delayText: String
-    val delayColor: Color
+    val delayTextColor: Color
+    val delayTileColor: Color
     when {
         departure.isCancelled -> {
             delayText = "AUS"
-            delayColor = StatusRed
+            delayTextColor = Color.White
+            delayTileColor = DelayRed
         }
         !departure.isRealtime -> {
             delayText = "—"
-            delayColor = TextSecondary
+            delayTextColor = TextSecondary
+            delayTileColor = FlapTile
         }
-        (departure.delayMinutes ?: 0) == 0 -> {
-            delayText = "+0"
-            delayColor = StatusGreen
-        }
-        (departure.delayMinutes ?: 0) > 0 -> {
-            delayText = "+${departure.delayMinutes}"
-            delayColor = BvgYellow
+        (departure.delayMinutes ?: 0) <= 0 -> {
+            delayText = if ((departure.delayMinutes ?: 0) == 0) "+0" else "${departure.delayMinutes}"
+            delayTextColor = Color.White
+            delayTileColor = DelayGreen
         }
         else -> {
-            delayText = "${departure.delayMinutes}"
-            delayColor = StatusBlue
+            delayText = "+${departure.delayMinutes}"
+            delayTextColor = Color.White
+            delayTileColor = DelayRed
         }
     }
 
-    val platformText = departure.platform?.take(3).orEmpty()
+    val platformText = departure.platform?.take(7).orEmpty()
 
     val metaText = buildString {
         append("planned ").append(departure.plannedTime)
@@ -109,15 +111,18 @@ fun DepartureRow(
             SplitFlapSegment(
                 text = delayText,
                 height = FlapHeight,
-                textColor = delayColor,
+                textColor = delayTextColor,
+                tileColor = delayTileColor,
                 modifier = Modifier.width(48.dp)
             )
             Spacer(Modifier.width(6.dp))
             SplitFlapSegment(
                 text = platformText,
                 height = FlapHeight,
-                textColor = TextPrimary,
-                modifier = Modifier.width(40.dp)
+                textColor = if (departure.isPlatformChanged) Color.White else TextPrimary,
+                tileColor = if (departure.isPlatformChanged) DelayRed else FlapTile,
+                fontFamily = FontFamily.SansSerif,
+                modifier = Modifier.width(76.dp)
             )
             Spacer(Modifier.width(10.dp))
             Text(
