@@ -1,161 +1,162 @@
 # Berlin Transit
 
-An Android app that shows real-time public transit departure times for the Berlin-Brandenburg region (VBB - Verkehrsverbund Berlin-Brandenburg).
+A departure board app for the **Berlin-Brandenburg (VBB)** region with a classic
+**split-flap display** (Solari board) look: the nearest stations to your position,
+live departures with planned **and** expected times, station search, and up to
+3 favorite stations.
 
-![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
-![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)
-![API](https://img.shields.io/badge/API-26+-blue?style=for-the-badge)
+Data comes from [v6.vbb.transport.rest](https://v6.vbb.transport.rest/), a free
+REST wrapper around VBB's HAFAS endpoint (realtime delays included, no API key).
 
 ## Features
 
-- **Real-time departures**: Shows upcoming departures from the nearest transit station
-- **Location-based**: Automatically finds nearby stations using your device's location
-- **Home screen widget**: Auto-updating widget showing the next 4 departures (updates every 15 minutes)
-- **Delay information**: Displays real-time delay information for each departure
-- **Color-coded lines**: Different transport types (S-Bahn, U-Bahn, Bus, Regional) are color-coded
-- **Dark mode support**: Automatic dark theme based on system settings
-- **Pull to refresh**: Swipe down to refresh departure times
-- **Persistent station**: Remembers your preferred station between app sessions
+- **Nearby stations** — uses the device location (`/locations/nearby`) and lists the
+  closest stops with walking distance; the nearest one is highlighted.
+- **Departure board** — split-flap display with staggered flip animations, showing
+  line badge (with VBB line colors), direction, **planned time**, and the
+  **expected time** derived from realtime data:
+  - `ON TIME` / `+N min` / `N min early` status chips
+  - `NO LIVE DATA` when the trip has no realtime prognosis
+  - `CANCELLED` with struck-through planned time for cancelled trips
+  - platform (`Gl.`), disruption/warning remarks, auto-refresh every 45 s
+- **Station search** — debounced fuzzy search across all VBB stops.
+- **Favorites** — star a station from its board, max 3, persisted via DataStore.
 
-## Supported Transport Types
+## Screens
 
-- S-Bahn (suburban trains)
-- U-Bahn (subway)
-- Regional trains (RE, RB)
-- Metro buses (M)
-- Regular buses
-- Express buses (X)
+| Home | Search | Board |
+|------|-------|-------|
+| Nearby stations + favorites | Fuzzy search | Split-flap departures |
 
-## API
+## Data source (tested API contract)
 
-This app uses the free VBB REST API: https://v5.vbb.transport.rest/
+Base URL: `https://v6.vbb.transport.rest` — no auth, rate limit 100 req/min,
+responses carry `ETag`/`Cache-Control: max-age=30`.
 
-No API key required.
+### Station search
+
+```
+GET /locations?query=alexanderplatz&results=12&stops=true&addresses=false&poi=false&language=de
+```
+
+Returns a list of stops. Note: only `stops=true` filtering gives clean station
+results; addresses/POIs are disabled on purpose.
+
+```json
+[{
+  "type": "stop",
+  "id": "900100003",
+  "name": "S+U Alexanderplatz Bhf (Berlin)",
+  "location": { "latitude": 52.521508, "longitude": 13.411267 },
+  "products": { "suburban": true, "subway": true, "tram": true, "bus": true, ... }
+}]
+```
+
+### Nearby stations
+
+```
+GET /locations/nearby?latitude=52.521508&longitude=13.411035&results=8&distance=2000
+```
+
+Same stop shape, plus `"distance": 15` (meters). Empty array for coordinates
+without stops (e.g. the ocean).
+
+### Departures
+
+```
+GET /stops/900100003/departures?results=20&duration=60&remarks=true&language=de
+```
+
+```json
+{
+  "departures": [{
+    "tripId": "1|3406|0|86|25112026",
+    "when": "2026-11-26T00:58:00+01:00",
+    "plannedWhen": "2026-11-26T00:57:00+01:00",
+    "delay": 60,
+    "platform": "3",
+    "plannedPlatform": "3",
+    "prognosisType": "prognosed",
+    "direction": "S Ostkreuz Bhf (Berlin)",
+    "cancelled": true,
+    "line": {
+      "name": "S5", "product": "suburban",
+      "color": { "fg": "#fff", "bg": "#eb7405" }
+    },
+    "remarks": [{ "type": "hint", "code": "FK", "text": "Fahrradmitnahme möglich" }]
+  }],
+  "realtimeDataUpdatedAt": 1795651097
+}
+```
+
+Observed data quirks (all handled by the app):
+
+- Stop IDs are the new **9-digit** format (`900100003`). The old 12-digit IDs
+  (`900000100003`) return `404 NOT_FOUND` — only use IDs returned by
+  `/locations` or `/locations/nearby`.
+- `delay` is in **seconds** and can be negative (early trips).
+- `when` is the realtime expectation; it equals `plannedWhen` when on time.
+- `cancelled` is only present when `true`; cancelled trips have
+  `when: null`, `delay: null` and a status remark
+  (`text.realtime.stop.cancelled`).
+- `delay: null` + `prognosisType: null` means **no realtime data** — only the
+  planned time is known.
+- `realtimeDataUpdatedAt` is **epoch seconds** (converted to ms in the app).
+- `remarks[].text` can contain HTML — stripped for display.
+- Stop names carry a `" (Berlin)"` suffix — stripped for display.
+
+### Errors
+
+- Unknown stop ID → `404` with a HAFAS error JSON body
+- Short/garbage queries → `200` with `[]`
 
 ## Building
 
-### Requirements
+### Android Studio
 
-- Android Studio Hedgehog (2023.1.1) or newer
-- Android SDK 34
-- JDK 17
+Open the project and run the `app` configuration (a device/emulator with
+API 26+). JDK 17 is required.
 
-### Build Steps
-
-#### Option A: Android Studio (Computer)
-1. Open the project in Android Studio
-2. Sync Gradle files
-3. Build → Build APK(s)
-4. APK will be at `app/build/outputs/apk/debug/app-debug.apk`
-
-#### Option B: GitHub Actions (From Phone)
-1. Create a GitHub repository
-2. Upload all project files
-3. Go to **Actions** tab → **Build APK** → **Run workflow**
-4. Download APK from artifacts after build completes (~5 min)
-
-See [MOBILE_BUILD_GUIDE.md](MOBILE_BUILD_GUIDE.md) for detailed phone build instructions.
+### Command line
 
 ```bash
-./gradlew assembleDebug
+./gradlew assembleDebug     # debug APK
+./gradlew test              # unit tests (mappers, parsing, favorites logic)
 ```
 
-### Minimum SDK
+### CI
 
-- API 26 (Android 8.0 Oreo)
+The GitHub Actions workflow (`.github/workflows/build.yml`) runs the unit tests
+and builds a debug APK on every push; download it from the run's artifacts.
 
-### Target SDK
+## Tech stack
 
-- API 34 (Android 14)
+- Kotlin 2.0, Jetpack Compose (Material 3), Navigation Compose
+- Retrofit + OkHttp + kotlinx.serialization
+- DataStore Preferences (favorites)
+- Platform `LocationManager` (works without Google Play services)
+- minSdk 26 (uses `java.time`), targetSdk 35
 
-## Permissions
-
-The app requires the following permissions:
-
-- `ACCESS_FINE_LOCATION` / `ACCESS_COARSE_LOCATION`: To find nearby stations
-- `INTERNET`: To fetch real-time departure data
-- `ACCESS_NETWORK_STATE`: To check network connectivity
-
-## Widget
-
-The home screen widget displays:
-- Station name (uses your preferred station or Berlin Hauptbahnhof)
-- Next 4 departures with line, direction, and time
-- Delay information (if applicable)
-- Last update timestamp
-
-The widget auto-updates every 15 minutes using WorkManager for reliable background updates. You can also tap the widget to open the main app.
-
-## Project Structure
+## Project layout
 
 ```
-app/
-├── src/main/
-│   ├── java/com/berlintransit/app/
-│   │   ├── api/              # VBB API client and repository
-│   │   ├── location/         # Location services with FusedLocationProvider
-│   │   ├── widget/           # Home screen widget and WorkManager worker
-│   │   ├── model/            # Data models (Departure, Station)
-│   │   ├── MainActivity.kt   # Main UI activity
-│   │   ├── DepartureAdapter.kt
-│   │   └── PreferencesManager.kt  # Station preferences storage
-│   ├── res/
-│   │   ├── layout/           # UI layouts
-│   │   ├── drawable/         # Icons and backgrounds
-│   │   ├── menu/             # Toolbar menu
-│   │   ├── values/           # Strings, colors, themes
-│   │   ├── values-night/     # Dark theme
-│   │   └── xml/              # Widget configuration
-│   └── AndroidManifest.xml
-└── build.gradle.kts
+app/src/main/java/com/berlintransit/app/
+├── BerlinTransitApplication.kt   # AppContainer (DI graph)
+├── MainActivity.kt
+├── data/
+│   ├── api/                      # Retrofit interface + DTOs (VBB REST)
+│   ├── TransitRepository.kt      # search / nearby / departures
+│   ├── TransitMappers.kt         # pure mapping + time/delay logic (unit tested)
+│   └── FavoritesStore.kt         # DataStore-backed favorites (max 3)
+├── location/LocationProvider.kt # LocationManager wrapper
+└── ui/
+    ├── components/               # SplitFlap, DepartureRow, badges, chips…
+    ├── home/  search/  board/    # screens + view models
+    └── TransitApp.kt             # navigation graph
 ```
 
-## Technical Details
+## Attribution
 
-### API Integration
-- Uses the free VBB REST API (https://v5.vbb.transport.rest/)
-- No API key required
-- Fetches nearby stations and real-time departures
-
-### Location Services
-- Uses Google Play Services FusedLocationProvider
-- Requests fresh location when last known is stale
-- Falls back to Berlin Hauptbahnhof if location unavailable
-
-### Widget Updates
-- Uses WorkManager for reliable background updates
-- Updates every 15 minutes
-- Persists preferred station in SharedPreferences
-
-### Architecture
-- MVVM-like pattern with Repository
-- Kotlin Coroutines for async operations
-- Retrofit for API calls
-- Material Design 3 components
-
-## Troubleshooting
-
-### Widget not updating
-- Make sure the app has been opened at least once to set your preferred station
-- Check that background data is enabled for the app
-- Try removing and re-adding the widget
-
-### Location not working
-- Ensure location services are enabled on your device
-- Grant location permission when prompted
-- The app falls back to Berlin Hauptbahnhof if location is unavailable
-
-### No departures showing
-- Check your internet connection
-- The station might have no service at that time (e.g., late night)
-- Try refreshing or finding a different station
-
-## License
-
-This project is provided as-is for educational purposes.
-
-## Credits
-
-- Transit data: VBB (Verkehrsverbund Berlin-Brandenburg)
-- API: https://github.com/public-transport/public-transport
-- Icons: Android Material Icons
+Data: [v6.vbb.transport.rest](https://v6.vbb.transport.rest/) (community-run
+REST API for VBB/HAFAS — what the VBB app shows, incl. realtime data).
+Not affiliated with VBB.

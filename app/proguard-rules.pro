@@ -1,4 +1,4 @@
 # Add project specific ProGuard rules here.
--keepattributes Signature
--keepattributes *Annotation*
--keep class com.berlintransit.app.model.** { *; }
+# Keep kotlinx.serialization generated serializers
+-keepattributes *Annotation*, InnerClasses
+-dontnote kotlinx.serialization.**

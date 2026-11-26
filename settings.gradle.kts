@@ -15,4 +15,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "BerlinTransit"
+
 include(":app")
