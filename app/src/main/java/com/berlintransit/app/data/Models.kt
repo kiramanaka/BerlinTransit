@@ -3,7 +3,7 @@ package com.berlintransit.app.data
 enum class TransitProduct(val apiName: String, val shortLabel: String) {
     SUBURBAN("suburban", "S"),
     SUBWAY("subway", "U"),
-    TRAM("tram", "M"),
+    TRAM("tram", "Tram"),
     BUS("bus", "Bus"),
     FERRY("ferry", "F"),
     EXPRESS("express", "ICE"),
