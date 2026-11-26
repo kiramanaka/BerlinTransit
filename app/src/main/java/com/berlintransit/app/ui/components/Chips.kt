@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -14,13 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.berlintransit.app.data.DepartureUi
 import com.berlintransit.app.data.TransitProduct
-import com.berlintransit.app.ui.theme.BvgYellow
-import com.berlintransit.app.ui.theme.StatusBlue
-import com.berlintransit.app.ui.theme.StatusGreen
-import com.berlintransit.app.ui.theme.StatusRed
-import com.berlintransit.app.ui.theme.TextSecondary
 
 @Composable
 fun ProductChips(products: List<TransitProduct>, modifier: Modifier = Modifier) {
@@ -47,53 +40,4 @@ fun productColor(product: TransitProduct): Color = when (product) {
     TransitProduct.FERRY -> Color(0xFF528DBA)
     TransitProduct.EXPRESS -> Color(0xFFC41E3A)
     TransitProduct.REGIONAL -> Color(0xFFA61E2A)
-}
-
-@Composable
-fun StatusChip(departure: DepartureUi, modifier: Modifier = Modifier) {
-    val delay = departure.delayMinutes
-    val label: String
-    val background: Color
-    val foreground: Color
-    when {
-        departure.isCancelled -> {
-            label = "CANCELLED"
-            background = Color(0xFF4A1414)
-            foreground = StatusRed
-        }
-        !departure.isRealtime -> {
-            label = "NO LIVE DATA"
-            background = Color(0xFF26282E)
-            foreground = TextSecondary
-        }
-        delay == null -> {
-            label = "—"
-            background = Color(0xFF26282E)
-            foreground = TextSecondary
-        }
-        delay == 0 -> {
-            label = "ON TIME"
-            background = Color(0xFF123322)
-            foreground = StatusGreen
-        }
-        delay > 0 -> {
-            label = "+$delay min"
-            background = Color(0xFF3A2D07)
-            foreground = BvgYellow
-        }
-        else -> {
-            label = "$delay min"
-            background = Color(0xFF14263F)
-            foreground = StatusBlue
-        }
-    }
-    Surface(shape = RoundedCornerShape(4.dp), color = background, modifier = modifier) {
-        Text(
-            text = label,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-            color = foreground,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold
-        )
-    }
 }

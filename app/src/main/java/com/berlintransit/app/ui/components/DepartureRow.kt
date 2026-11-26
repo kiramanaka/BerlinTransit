@@ -1,6 +1,6 @@
 package com.berlintransit.app.ui.components
 
-import android.graphics.Typeface
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,12 +27,12 @@ import com.berlintransit.app.ui.theme.TextPrimary
 import com.berlintransit.app.ui.theme.TextSecondary
 
 private val FlapHeight = 30.dp
-private val CondensedBold = FontFamily(Typeface.create("sans-serif-condensed", Typeface.BOLD))
 
 @Composable
 fun DepartureRow(
     departure: DepartureUi,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
 ) {
     val lineLabel = departure.lineName.replace(" ", "").take(4)
     val (lineBackgroundColor, lineForegroundColor) = lineBadgeColors(
@@ -78,6 +78,7 @@ fun DepartureRow(
     Column(
         modifier
             .fillMaxWidth()
+            .clickable(onClick = onClick)
             .padding(start = 12.dp, end = 12.dp, top = 5.dp, bottom = 5.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -93,7 +94,6 @@ fun DepartureRow(
                 text = departure.direction.uppercase(),
                 height = FlapHeight,
                 fontFamily = FontFamily.SansSerif,
-                condensedFontFamily = CondensedBold,
                 modifier = Modifier.weight(1f)
             )
         }

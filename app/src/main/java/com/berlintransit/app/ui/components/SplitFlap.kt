@@ -1,11 +1,10 @@
 package com.berlintransit.app.ui.components
 
+import android.graphics.Typeface
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -19,13 +18,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.berlintransit.app.ui.theme.BvgYellow
 import com.berlintransit.app.ui.theme.FlapTile
@@ -33,6 +34,12 @@ import com.berlintransit.app.ui.theme.FlapTileBorder
 import kotlinx.coroutines.delay
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+
+private val CellShape = RoundedCornerShape(3.dp)
+private val SegmentShape = RoundedCornerShape(4.dp)
+private val SeamColor = Color.Black.copy(alpha = 0.55f)
+private val CondensedFontFamily =
+    FontFamily(Typeface.create("sans-serif-condensed", Typeface.BOLD))
 
 /**
  * Renders text like a classic split-flap departure board (Solari display).
@@ -76,8 +83,16 @@ fun SplitFlapCell(
     Box(
         modifier
             .size(cellWidth, cellHeight)
-            .background(tileColor, RoundedCornerShape(3.dp))
-            .border(width = 1.dp, color = tileBorderColor, shape = RoundedCornerShape(3.dp)),
+            .background(tileColor, CellShape)
+            .border(width = 1.dp, color = tileBorderColor, shape = CellShape)
+            .drawWithContent {
+                drawContent()
+                drawRect(
+                    color = SeamColor,
+                    topLeft = Offset(0f, size.height / 2f),
+                    size = Size(size.width, 1.dp.toPx())
+                )
+            },
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -86,13 +101,6 @@ fun SplitFlapCell(
             fontSize = fontSize,
             fontFamily = FontFamily.Monospace,
             fontWeight = FontWeight.Bold
-        )
-        Box(
-            Modifier
-                .align(Alignment.Center)
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(Color.Black.copy(alpha = 0.55f))
         )
     }
 }
@@ -118,8 +126,8 @@ fun ClockFlap(modifier: Modifier = Modifier) {
 
 /**
  * A single split-flap tile for a whole field (line, destination, time…).
- * When [condensedFontFamily] is set and the text would be ellipsized,
- * the condensed font is used instead to fit more characters.
+ * Long or overflowing text falls back to a condensed font so that more
+ * characters stay visible.
  */
 @Composable
 fun SplitFlapSegment(
@@ -129,58 +137,32 @@ fun SplitFlapSegment(
     textColor: Color = BvgYellow,
     tileColor: Color = FlapTile,
     fontFamily: FontFamily = FontFamily.Monospace,
-    fontWeight: FontWeight = FontWeight.Bold,
-    condensedFontFamily: FontFamily? = null
+    fontWeight: FontWeight = FontWeight.Bold
 ) {
     val fontSize = with(LocalDensity.current) { (height * 0.55f).toSp() }
+    var useCondensed by remember(text) {
+        mutableStateOf(text.length >= CONDENSED_HINT_LENGTH)
+    }
     Box(
         modifier
             .height(height)
-            .background(FlapSlotColor, RoundedCornerShape(4.dp))
-            .border(width = 1.dp, color = FlapTileBorder, shape = RoundedCornerShape(4.dp))
-    ) {
-        FlapFace(
-            text = text,
-            textColor = textColor,
-            tileColor = tileColor,
-            fontSize = fontSize,
-            fontFamily = fontFamily,
-            condensedFontFamily = condensedFontFamily,
-            fontWeight = fontWeight,
-            modifier = Modifier.fillMaxSize()
-        )
-        Box(
-            Modifier
-                .align(Alignment.Center)
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(Color.Black.copy(alpha = 0.55f))
-        )
-    }
-}
-
-@Composable
-private fun FlapFace(
-    text: String,
-    textColor: Color,
-    tileColor: Color,
-    fontSize: TextUnit,
-    fontFamily: FontFamily,
-    condensedFontFamily: FontFamily?,
-    fontWeight: FontWeight,
-    modifier: Modifier = Modifier
-) {
-    var useCondensed by remember(text) { mutableStateOf(false) }
-    Box(
-        modifier
-            .background(tileColor, RoundedCornerShape(4.dp)),
+            .background(tileColor, SegmentShape)
+            .border(width = 1.dp, color = FlapTileBorder, shape = SegmentShape)
+            .drawWithContent {
+                drawContent()
+                drawRect(
+                    color = SeamColor,
+                    topLeft = Offset(0f, size.height / 2f),
+                    size = Size(size.width, 1.dp.toPx())
+                )
+            },
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
             color = textColor,
             fontSize = fontSize,
-            fontFamily = if (useCondensed && condensedFontFamily != null) condensedFontFamily else fontFamily,
+            fontFamily = if (useCondensed) CondensedFontFamily else fontFamily,
             fontWeight = fontWeight,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -190,4 +172,4 @@ private fun FlapFace(
     }
 }
 
-private val FlapSlotColor = Color(0xFF101115)
+private const val CONDENSED_HINT_LENGTH = 20
