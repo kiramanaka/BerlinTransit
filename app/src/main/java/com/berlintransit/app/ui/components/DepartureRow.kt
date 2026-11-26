@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
@@ -22,6 +23,8 @@ import com.berlintransit.app.ui.theme.StatusBlue
 import com.berlintransit.app.ui.theme.StatusGreen
 import com.berlintransit.app.ui.theme.StatusRed
 import com.berlintransit.app.ui.theme.TextSecondary
+
+private val FlapHeight = 30.dp
 
 @Composable
 fun DepartureRow(
@@ -73,50 +76,53 @@ fun DepartureRow(
     Column(
         modifier
             .fillMaxWidth()
-            .padding(start = 12.dp, end = 12.dp, top = 6.dp, bottom = 6.dp)
+            .padding(start = 12.dp, end = 12.dp, top = 5.dp, bottom = 5.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             SplitFlapSegment(
                 text = lineLabel,
-                height = 36.dp,
+                height = FlapHeight,
                 textColor = lineForegroundColor,
                 tileColor = lineBackgroundColor,
-                modifier = Modifier.width(58.dp),
+                modifier = Modifier.width(56.dp),
                 staggerMillis = rowStagger
             )
             Spacer(Modifier.width(8.dp))
             SplitFlapSegment(
                 text = departure.direction.uppercase(),
-                height = 36.dp,
+                height = FlapHeight,
                 fontFamily = FontFamily.SansSerif,
                 modifier = Modifier.weight(1f),
                 staggerMillis = rowStagger + 40L
             )
-            Spacer(Modifier.width(8.dp))
+        }
+        Spacer(Modifier.height(4.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
             SplitFlapSegment(
                 text = timeText,
-                height = 36.dp,
+                height = FlapHeight,
                 textColor = timeColor,
-                modifier = Modifier.width(78.dp),
+                modifier = Modifier.width(72.dp),
                 staggerMillis = rowStagger + 80L
             )
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(6.dp))
             SplitFlapSegment(
                 text = delayText,
-                height = 36.dp,
+                height = FlapHeight,
                 textColor = delayColor,
-                modifier = Modifier.width(52.dp),
+                modifier = Modifier.width(48.dp),
                 staggerMillis = rowStagger + 120L
             )
+            Spacer(Modifier.width(10.dp))
+            Text(
+                text = metaText,
+                color = if (departure.isCancelled) Color(0xFFB96A6A) else TextSecondary,
+                fontSize = 11.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textDecoration = if (departure.isCancelled) TextDecoration.LineThrough else null,
+                modifier = Modifier.weight(1f)
+            )
         }
-        Text(
-            text = metaText,
-            color = if (departure.isCancelled) Color(0xFFB96A6A) else TextSecondary,
-            fontSize = 11.sp,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            textDecoration = if (departure.isCancelled) TextDecoration.LineThrough else null,
-            modifier = Modifier.padding(horizontal = 2.dp, vertical = 3.dp)
-        )
     }
 }
