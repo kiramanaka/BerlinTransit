@@ -2,6 +2,7 @@ package com.berlintransit.app.ui
 
 import android.net.Uri
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -16,13 +17,23 @@ import com.berlintransit.app.ui.search.SearchScreen
 fun TransitApp(
     container: AppContainer,
     initialStopId: String? = null,
-    initialStopName: String? = null
+    initialStopName: String? = null,
+    pendingStation: Pair<String, String>? = null,
+    onPendingStationConsumed: () -> Unit = {}
 ) {
     val navController = rememberNavController()
     val startDestination = if (initialStopId.isNullOrBlank()) {
         "home"
     } else {
         boardRoute(initialStopId, initialStopName ?: initialStopId)
+    }
+    LaunchedEffect(pendingStation) {
+        if (pendingStation != null) {
+            navController.navigate(boardRoute(pendingStation.first, pendingStation.second)) {
+                launchSingleTop = true
+            }
+            onPendingStationConsumed()
+        }
     }
     NavHost(navController = navController, startDestination = startDestination) {
         composable("home") {

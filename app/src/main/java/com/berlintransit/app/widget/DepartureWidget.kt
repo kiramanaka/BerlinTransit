@@ -20,6 +20,8 @@ import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.action.actionStartActivity
+import androidx.glance.appwidget.lazy.LazyColumn
+import androidx.glance.appwidget.lazy.items
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.Alignment
@@ -53,7 +55,7 @@ import com.berlintransit.app.ui.theme.TextPrimary
 import com.berlintransit.app.ui.theme.TextSecondary
 import com.berlintransit.app.ui.toUserMessage
 
-private val SeamColor = Color(0x8C000000)
+private val SeamColor = Color(0x4D000000)
 private val CondensedFontFamily = FontFamily("sans-serif-condensed")
 
 sealed interface WidgetUiState {
@@ -113,7 +115,7 @@ class DepartureWidget : GlanceAppWidget() {
             WidgetUiState.Content(
                 stationId = station.first,
                 stationName = station.second,
-                departures = board.departures.take(6),
+                departures = board.departures.take(20),
                 updatedAtMs = board.realtimeDataUpdatedAtMs
             )
         } catch (t: Throwable) {
@@ -126,7 +128,6 @@ class DepartureWidget : GlanceAppWidget() {
 private fun DepartureWidgetContent(state: WidgetUiState) {
     val context = LocalContext.current
     val size = LocalSize.current
-    val rowCapacity = ((size.height.value - 56f) / 26f).toInt().coerceIn(1, 6)
     val directionChars = ((size.width.value - 155f) / 6f).toInt().coerceIn(8, 36)
     val nameChars = ((size.width.value - 100f) / 6.5f).toInt().coerceIn(8, 30)
     when (state) {
@@ -141,33 +142,48 @@ private fun DepartureWidgetContent(state: WidgetUiState) {
                     .padding(10.dp)
                     .clickable(actionStartActivity(openStation))
             ) {
-                Row(
+                Box(
                     modifier = GlanceModifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    contentAlignment = Alignment.Center
                 ) {
-                    WidgetFlapTile(
-                        text = state.stationName.take(nameChars),
-                        textColor = TextPrimary,
-                        tileColor = FlapTile,
-                        fontSize = 13.sp,
-                        modifier = GlanceModifier.defaultWeight()
-                    )
-                    Spacer(modifier = GlanceModifier.width(6.dp))
-                    Text(
-                        text = formatUpdatedTimestamp(state.updatedAtMs),
-                        style = TextStyle(
-                            color = ColorProvider(TextSecondary),
-                            fontSize = 9.sp,
-                            fontFamily = CondensedFontFamily
+                    Row(
+                        modifier = GlanceModifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        WidgetFlapTile(
+                            text = state.stationName.take(nameChars),
+                            textColor = TextPrimary,
+                            tileColor = FlapTile,
+                            fontSize = 13.sp,
+                            modifier = GlanceModifier.defaultWeight()
                         )
-                    )
-                    Spacer(modifier = GlanceModifier.width(6.dp))
-                    RefreshButton()
+                        Spacer(modifier = GlanceModifier.width(6.dp))
+                        Text(
+                            text = formatUpdatedTimestamp(state.updatedAtMs),
+                            style = TextStyle(
+                                color = ColorProvider(TextSecondary),
+                                fontSize = 9.sp,
+                                fontFamily = CondensedFontFamily
+                            )
+                        )
+                        Spacer(modifier = GlanceModifier.width(6.dp))
+                        RefreshButton()
+                    }
+                    Seam()
                 }
                 Spacer(modifier = GlanceModifier.height(6.dp))
-                state.departures.take(rowCapacity).forEach { departure ->
-                    WidgetDepartureRow(departure, directionChars)
-                    Spacer(modifier = GlanceModifier.height(4.dp))
+                LazyColumn(modifier = GlanceModifier.defaultWeight()) {
+                    items(state.departures) { departure ->
+                        Box(
+                            modifier = GlanceModifier
+                                .fillMaxWidth()
+                                .clickable(actionStartActivity(openStation)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            WidgetDepartureRow(departure, directionChars)
+                            Seam()
+                        }
+                    }
                 }
             }
         }
@@ -200,6 +216,16 @@ private fun DepartureWidgetContent(state: WidgetUiState) {
             }
         }
     }
+}
+
+@Composable
+private fun Seam() {
+    Spacer(
+        modifier = GlanceModifier
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(ColorProvider(SeamColor))
+    )
 }
 
 @Composable
@@ -240,12 +266,6 @@ private fun WidgetFlapTile(
                 fontFamily = CondensedFontFamily,
                 fontWeight = FontWeight.Bold
             )
-        )
-        Spacer(
-            modifier = GlanceModifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(ColorProvider(SeamColor))
         )
     }
 }

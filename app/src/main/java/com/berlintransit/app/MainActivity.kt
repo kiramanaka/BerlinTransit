@@ -1,11 +1,13 @@
 package com.berlintransit.app
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import com.berlintransit.app.ui.TransitApp
@@ -16,11 +18,13 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
+    private val pendingStation = mutableStateOf<Pair<String, String>?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val container = (application as BerlinTransitApplication).container
-        val initialStopId = intent?.getStringExtra(EXTRA_STOP_ID)
-        val initialStopName = intent?.getStringExtra(EXTRA_STOP_NAME)
+        val initialStation = stationFromIntent(intent)
+        pendingStation.value = null
         setContent {
             BerlinTransitTheme {
                 Surface(
@@ -29,12 +33,19 @@ class MainActivity : ComponentActivity() {
                 ) {
                     TransitApp(
                         container = container,
-                        initialStopId = initialStopId,
-                        initialStopName = initialStopName
+                        initialStopId = initialStation?.first,
+                        initialStopName = initialStation?.second,
+                        pendingStation = pendingStation.value,
+                        onPendingStationConsumed = { pendingStation.value = null }
                     )
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        pendingStation.value = stationFromIntent(intent)
     }
 
     override fun onResume() {
@@ -42,6 +53,11 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             runCatching { WidgetScheduler.refreshAllWidgets(applicationContext) }
         }
+    }
+
+    private fun stationFromIntent(intent: Intent?): Pair<String, String>? {
+        val stopId = intent?.getStringExtra(EXTRA_STOP_ID) ?: return null
+        return stopId to (intent.getStringExtra(EXTRA_STOP_NAME) ?: stopId)
     }
 
     companion object {
