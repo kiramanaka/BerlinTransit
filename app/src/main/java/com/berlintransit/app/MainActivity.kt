@@ -8,8 +8,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
-import com.berlintransit.app.ui.BerlinTransitTheme
 import com.berlintransit.app.ui.TransitApp
+import com.berlintransit.app.ui.theme.BerlinTransitTheme
 import com.berlintransit.app.widget.WidgetScheduler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

@@ -56,7 +56,7 @@ class WidgetConfigActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val appWidgetId = intent?.extras?.getInt(
-            AppWidgetManager.EXTRA_APP_WIDGET_ID,
+            AppWidgetManager.EXTRA_APPWIDGET_ID,
             AppWidgetManager.INVALID_APPWIDGET_ID
         ) ?: AppWidgetManager.INVALID_APPWIDGET_ID
         if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
@@ -86,10 +86,10 @@ class WidgetConfigActivity : ComponentActivity() {
         } else {
             WidgetPrefs.setStation(this, appWidgetId, entry.id, entry.name)
         }
-        setResult(RESULT_OK, Intent().putExtra(AppWidgetManager.EXTRA_APP_WIDGET_ID, appWidgetId))
+        setResult(RESULT_OK, Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId))
         lifecycleScope.launch(Dispatchers.IO) {
             runCatching {
-                val glanceId = GlanceAppWidgetManager(this@WidgetConfigActivity).getGlanceId(appWidgetId)
+                val glanceId = GlanceAppWidgetManager(this@WidgetConfigActivity).getGlanceIdBy(appWidgetId)
                 DepartureWidget().update(this@WidgetConfigActivity, glanceId)
             }
             finish()
