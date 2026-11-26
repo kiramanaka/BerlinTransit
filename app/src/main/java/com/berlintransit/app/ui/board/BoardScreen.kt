@@ -47,7 +47,7 @@ import com.berlintransit.app.ui.components.DepartureRow
 import com.berlintransit.app.ui.components.ErrorCard
 import com.berlintransit.app.ui.components.SplitFlapText
 import com.berlintransit.app.ui.theme.BoardSurface
-import com.berlintransit.app.ui.theme.FlapAmber
+import com.berlintransit.app.ui.theme.BvgYellow
 import com.berlintransit.app.ui.theme.TextPrimary
 import com.berlintransit.app.ui.theme.TextSecondary
 import kotlinx.coroutines.delay
@@ -104,7 +104,7 @@ fun BoardScreen(
                         Icon(
                             imageVector = Icons.Filled.Star,
                             contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
-                            tint = if (isFavorite) FlapAmber else Color(0xFF54575E)
+                            tint = if (isFavorite) BvgYellow else Color(0xFF54575E)
                         )
                     }
                     IconButton(onClick = { viewModel.refresh() }) {
@@ -196,7 +196,7 @@ private fun LoadingBoard() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(Modifier.height(48.dp))
-        CircularProgressIndicator(color = FlapAmber)
+        CircularProgressIndicator(color = BvgYellow)
         Spacer(Modifier.height(16.dp))
         Text("Loading departures…", color = TextSecondary, fontSize = 13.sp)
     }

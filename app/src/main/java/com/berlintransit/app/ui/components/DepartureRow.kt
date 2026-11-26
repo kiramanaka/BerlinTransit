@@ -17,7 +17,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.berlintransit.app.data.DepartureUi
-import com.berlintransit.app.ui.theme.FlapAmber
+import com.berlintransit.app.ui.theme.BvgYellow
 import com.berlintransit.app.ui.theme.StatusBlue
 import com.berlintransit.app.ui.theme.StatusGreen
 import com.berlintransit.app.ui.theme.StatusRed
@@ -31,11 +31,13 @@ fun DepartureRow(
 ) {
     val rowStagger = index * 60L
     val lineLabel = departure.lineName.replace(" ", "").take(4)
-    val lineBackgroundColor =
-        parseHexColor(departure.lineColorBg) ?: fallbackBadgeColor(departure.lineName)
-    val lineForegroundColor = parseHexColor(departure.lineColorFg) ?: Color.White
+    val (lineBackgroundColor, lineForegroundColor) = lineBadgeColors(
+        lineName = departure.lineName,
+        apiColorFg = departure.lineColorFg,
+        apiColorBg = departure.lineColorBg
+    )
     val timeText = departure.expectedTime ?: departure.plannedTime
-    val timeColor = if (departure.isCancelled) StatusRed else FlapAmber
+    val timeColor = if (departure.isCancelled) StatusRed else BvgYellow
 
     val delayText: String
     val delayColor: Color
@@ -54,7 +56,7 @@ fun DepartureRow(
         }
         (departure.delayMinutes ?: 0) > 0 -> {
             delayText = "+${departure.delayMinutes}"
-            delayColor = FlapAmber
+            delayColor = BvgYellow
         }
         else -> {
             delayText = "${departure.delayMinutes}"

@@ -34,7 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import com.berlintransit.app.ui.theme.FlapAmber
+import com.berlintransit.app.ui.theme.BvgYellow
 import com.berlintransit.app.ui.theme.FlapTile
 import com.berlintransit.app.ui.theme.FlapTileBorder
 import kotlinx.coroutines.delay
@@ -54,7 +54,7 @@ fun SplitFlapText(
     cellWidth: Dp,
     cellHeight: Dp,
     modifier: Modifier = Modifier,
-    textColor: Color = FlapAmber,
+    textColor: Color = BvgYellow,
     tileColor: Color = FlapTile,
     tileBorderColor: Color = FlapTileBorder,
     animateInitial: Boolean = false,
@@ -85,7 +85,7 @@ fun SplitFlapCell(
     cellWidth: Dp,
     cellHeight: Dp,
     modifier: Modifier = Modifier,
-    textColor: Color = FlapAmber,
+    textColor: Color = BvgYellow,
     tileColor: Color = FlapTile,
     tileBorderColor: Color = FlapTileBorder,
     animateInitial: Boolean = false,
@@ -237,7 +237,7 @@ fun SplitFlapSegment(
     text: String,
     height: Dp,
     modifier: Modifier = Modifier,
-    textColor: Color = FlapAmber,
+    textColor: Color = BvgYellow,
     tileColor: Color = FlapTile,
     fontFamily: FontFamily = FontFamily.Monospace,
     fontWeight: FontWeight = FontWeight.Bold,

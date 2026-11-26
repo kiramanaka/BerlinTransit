@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.sp
 import com.berlintransit.app.data.FavoriteEntry
 import com.berlintransit.app.data.Station
 import com.berlintransit.app.ui.theme.BoardSurfaceVariant
-import com.berlintransit.app.ui.theme.FlapAmber
+import com.berlintransit.app.ui.theme.BvgYellow
 import com.berlintransit.app.ui.theme.StatusRed
 import com.berlintransit.app.ui.theme.TextPrimary
 import com.berlintransit.app.ui.theme.TextSecondary
@@ -73,7 +73,7 @@ fun NearbyStationRow(
             Icon(
                 imageVector = Icons.Filled.LocationOn,
                 contentDescription = null,
-                tint = FlapAmber,
+                tint = BvgYellow,
                 modifier = Modifier.size(18.dp)
             )
             Spacer(Modifier.width(8.dp))
@@ -97,7 +97,7 @@ fun NearbyStationRow(
         station.distanceMeters?.let { distance ->
             Text(
                 text = formatDistance(distance),
-                color = FlapAmber,
+                color = BvgYellow,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -164,7 +164,7 @@ fun FavoriteRow(
         Icon(
             imageVector = Icons.Filled.Star,
             contentDescription = null,
-            tint = FlapAmber,
+            tint = BvgYellow,
             modifier = Modifier.size(18.dp)
         )
         Spacer(Modifier.width(10.dp))

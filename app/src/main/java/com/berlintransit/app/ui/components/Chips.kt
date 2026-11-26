@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.berlintransit.app.data.DepartureUi
 import com.berlintransit.app.data.TransitProduct
-import com.berlintransit.app.ui.theme.FlapAmber
+import com.berlintransit.app.ui.theme.BvgYellow
 import com.berlintransit.app.ui.theme.StatusBlue
 import com.berlintransit.app.ui.theme.StatusGreen
 import com.berlintransit.app.ui.theme.StatusRed
@@ -41,10 +41,10 @@ fun ProductChips(products: List<TransitProduct>, modifier: Modifier = Modifier) 
 
 fun productColor(product: TransitProduct): Color = when (product) {
     TransitProduct.SUBURBAN -> Color(0xFF0B8A44)
-    TransitProduct.SUBWAY -> Color(0xFF1746A2)
-    TransitProduct.TRAM -> Color(0xFFCB171E)
-    TransitProduct.BUS -> Color(0xFF732C8B)
-    TransitProduct.FERRY -> Color(0xFF0F7CA8)
+    TransitProduct.SUBWAY -> Color(0xFF115D91)
+    TransitProduct.TRAM -> Color(0xFFBE1414)
+    TransitProduct.BUS -> Color(0xFF95276E)
+    TransitProduct.FERRY -> Color(0xFF528DBA)
     TransitProduct.EXPRESS -> Color(0xFFC41E3A)
     TransitProduct.REGIONAL -> Color(0xFFA61E2A)
 }
@@ -79,7 +79,7 @@ fun StatusChip(departure: DepartureUi, modifier: Modifier = Modifier) {
         delay > 0 -> {
             label = "+$delay min"
             background = Color(0xFF3A2D07)
-            foreground = FlapAmber
+            foreground = BvgYellow
         }
         else -> {
             label = "$delay min"

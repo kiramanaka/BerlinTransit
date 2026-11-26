@@ -54,7 +54,7 @@ import com.berlintransit.app.ui.components.PermissionCard
 import com.berlintransit.app.ui.components.SectionHeader
 import com.berlintransit.app.ui.components.SplitFlapText
 import com.berlintransit.app.ui.theme.BoardSurfaceVariant
-import com.berlintransit.app.ui.theme.FlapAmber
+import com.berlintransit.app.ui.theme.BvgYellow
 import com.berlintransit.app.ui.theme.TextSecondary
 
 @Composable
@@ -229,7 +229,7 @@ private fun NearbySection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 CircularProgressIndicator(
-                    color = FlapAmber,
+                    color = BvgYellow,
                     strokeWidth = 2.dp,
                     modifier = Modifier.width(18.dp).height(18.dp)
                 )
@@ -248,7 +248,7 @@ private fun NearbySection(
                 ) {
                     Text(
                         "Retry",
-                        color = FlapAmber,
+                        color = BvgYellow,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
