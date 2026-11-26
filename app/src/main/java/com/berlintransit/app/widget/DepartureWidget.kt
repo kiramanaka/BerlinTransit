@@ -42,6 +42,7 @@ import com.berlintransit.app.MainActivity
 import com.berlintransit.app.R
 import com.berlintransit.app.data.DepartureUi
 import com.berlintransit.app.data.formatUpdatedTimestamp
+import com.berlintransit.app.ui.components.CondensedFontFamily
 import com.berlintransit.app.ui.components.lineBadgeColors
 import com.berlintransit.app.ui.theme.BoardBackground
 import com.berlintransit.app.ui.theme.BvgYellow
@@ -124,9 +125,9 @@ class DepartureWidget : GlanceAppWidget() {
 private fun DepartureWidgetContent(state: WidgetUiState) {
     val context = LocalContext.current
     val size = LocalSize.current
-    val rowCapacity = ((size.height.value - 58f) / 26f).toInt().coerceIn(1, 6)
-    val directionChars = ((size.width.value - 150f) / 7f).toInt().coerceIn(8, 36)
-    val nameChars = ((size.width.value - 110f) / 7.5f).toInt().coerceIn(8, 30)
+    val rowCapacity = ((size.height.value - 56f) / 26f).toInt().coerceIn(1, 6)
+    val directionChars = ((size.width.value - 155f) / 6f).toInt().coerceIn(8, 36)
+    val nameChars = ((size.width.value - 100f) / 6.5f).toInt().coerceIn(8, 30)
     when (state) {
         is WidgetUiState.Content -> {
             val openStation = Intent(context, MainActivity::class.java)
@@ -155,7 +156,8 @@ private fun DepartureWidgetContent(state: WidgetUiState) {
                         text = formatUpdatedTimestamp(state.updatedAtMs),
                         style = TextStyle(
                             color = ColorProvider(TextSecondary),
-                            fontSize = 9.sp
+                            fontSize = 9.sp,
+                            fontFamily = CondensedFontFamily
                         )
                     )
                     Spacer(modifier = GlanceModifier.width(6.dp))
@@ -184,7 +186,11 @@ private fun DepartureWidgetContent(state: WidgetUiState) {
                 ) {
                     Text(
                         text = state.message,
-                        style = TextStyle(color = ColorProvider(TextSecondary), fontSize = 12.sp),
+                        style = TextStyle(
+                            color = ColorProvider(TextSecondary),
+                            fontSize = 12.sp,
+                            fontFamily = CondensedFontFamily
+                        ),
                         modifier = GlanceModifier.defaultWeight()
                     )
                     Spacer(modifier = GlanceModifier.width(6.dp))
@@ -222,7 +228,7 @@ private fun WidgetFlapTile(
     Box(
         modifier = modifier
             .background(ColorProvider(tileColor))
-            .padding(horizontal = 6.dp, vertical = 3.dp),
+            .padding(horizontal = 5.dp, vertical = 2.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -230,6 +236,7 @@ private fun WidgetFlapTile(
             style = TextStyle(
                 color = ColorProvider(textColor),
                 fontSize = fontSize,
+                fontFamily = CondensedFontFamily,
                 fontWeight = FontWeight.Bold
             )
         )
@@ -250,36 +257,35 @@ private fun WidgetDepartureRow(departure: DepartureUi, directionChars: Int) {
         apiColorBg = departure.lineColorBg
     )
     val delayMinutes = departure.delayMinutes
-    val delayLabel: String
-    val delayTileColor: Color
-    val delayTextColor: Color
+    val timeText = departure.expectedTime ?: departure.plannedTime
+    val timeTextColor: Color
+    val timeTileColor: Color
     when {
         departure.isCancelled -> {
-            delayLabel = "AUS"
-            delayTileColor = DelayRed
-            delayTextColor = Color.White
+            timeTextColor = Color.White
+            timeTileColor = DelayRed
         }
         !departure.isRealtime -> {
-            delayLabel = "—"
-            delayTileColor = FlapTile
-            delayTextColor = TextSecondary
+            timeTextColor = BvgYellow
+            timeTileColor = FlapTile
         }
-        delayMinutes == null || delayMinutes == 0 -> {
-            delayLabel = "+0"
-            delayTileColor = DelayGreen
-            delayTextColor = Color.White
+        delayMinutes != null && delayMinutes > 0 -> {
+            timeTextColor = Color.White
+            timeTileColor = DelayRed
         }
-        delayMinutes > 0 -> {
-            delayLabel = "+$delayMinutes"
-            delayTileColor = DelayRed
-            delayTextColor = Color.White
+        delayMinutes != null && delayMinutes < 0 -> {
+            timeTextColor = Color(0xFF141414)
+            timeTileColor = BvgYellow
         }
         else -> {
-            delayLabel = "$delayMinutes"
-            delayTileColor = DelayGreen
-            delayTextColor = Color.White
+            timeTextColor = Color.White
+            timeTileColor = DelayGreen
         }
     }
+    val platformText = departure.platform
+        ?.removePrefix("Pos. ")
+        ?.take(3)
+        .orEmpty()
     Row(
         modifier = GlanceModifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -288,7 +294,24 @@ private fun WidgetDepartureRow(departure: DepartureUi, directionChars: Int) {
             text = departure.lineName.replace(" ", "").take(4),
             textColor = badgeFg,
             tileColor = badgeBg,
-            fontSize = 11.sp
+            fontSize = 11.sp,
+            modifier = GlanceModifier.width(46.dp)
+        )
+        Spacer(modifier = GlanceModifier.width(4.dp))
+        WidgetFlapTile(
+            text = timeText,
+            textColor = timeTextColor,
+            tileColor = timeTileColor,
+            fontSize = 12.sp,
+            modifier = GlanceModifier.width(56.dp)
+        )
+        Spacer(modifier = GlanceModifier.width(4.dp))
+        WidgetFlapTile(
+            text = platformText,
+            textColor = if (departure.isPlatformChanged) Color.White else TextPrimary,
+            tileColor = if (departure.isPlatformChanged) DelayRed else FlapTile,
+            fontSize = 10.sp,
+            modifier = GlanceModifier.width(30.dp)
         )
         Spacer(modifier = GlanceModifier.width(4.dp))
         WidgetFlapTile(
@@ -297,20 +320,6 @@ private fun WidgetDepartureRow(departure: DepartureUi, directionChars: Int) {
             tileColor = FlapTile,
             fontSize = 12.sp,
             modifier = GlanceModifier.defaultWeight()
-        )
-        Spacer(modifier = GlanceModifier.width(4.dp))
-        WidgetFlapTile(
-            text = departure.expectedTime ?: departure.plannedTime,
-            textColor = BvgYellow,
-            tileColor = FlapTile,
-            fontSize = 12.sp
-        )
-        Spacer(modifier = GlanceModifier.width(4.dp))
-        WidgetFlapTile(
-            text = delayLabel,
-            textColor = delayTextColor,
-            tileColor = delayTileColor,
-            fontSize = 10.sp
         )
     }
 }

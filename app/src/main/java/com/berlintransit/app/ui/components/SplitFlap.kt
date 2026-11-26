@@ -1,6 +1,5 @@
 package com.berlintransit.app.ui.components
 
-import android.graphics.Typeface
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -38,8 +37,6 @@ import java.time.format.DateTimeFormatter
 private val CellShape = RoundedCornerShape(3.dp)
 private val SegmentShape = RoundedCornerShape(4.dp)
 private val SeamColor = Color.Black.copy(alpha = 0.55f)
-private val CondensedFontFamily =
-    FontFamily(Typeface.create("sans-serif-condensed", Typeface.BOLD))
 
 /**
  * Renders text like a classic split-flap departure board (Solari display).
