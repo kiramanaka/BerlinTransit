@@ -1,7 +1,7 @@
 package com.berlintransit.app.widget
 
 import android.content.Context
-import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.updateAll
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
@@ -34,8 +34,6 @@ object WidgetScheduler {
     }
 
     suspend fun refreshAllWidgets(context: Context) {
-        val manager = GlanceAppWidgetManager(context)
-        val ids = manager.getGlanceIds(DepartureWidgetReceiver::class.java)
-        ids.forEach { id -> DepartureWidget().update(context, id) }
+        DepartureWidget().updateAll(context)
     }
 }
