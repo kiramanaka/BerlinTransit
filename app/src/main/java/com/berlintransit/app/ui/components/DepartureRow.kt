@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
@@ -12,92 +11,110 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.berlintransit.app.data.DepartureUi
+import com.berlintransit.app.ui.theme.FlapAmber
+import com.berlintransit.app.ui.theme.StatusBlue
+import com.berlintransit.app.ui.theme.StatusGreen
+import com.berlintransit.app.ui.theme.StatusRed
 import com.berlintransit.app.ui.theme.TextSecondary
 
 @Composable
 fun DepartureRow(
     departure: DepartureUi,
     index: Int,
-    directionCells: Int,
     modifier: Modifier = Modifier
 ) {
-    val rowStartDelay = index * 45L
+    val rowStagger = index * 60L
+    val lineLabel = departure.lineName.replace(" ", "").take(4)
+    val lineBackgroundColor =
+        parseHexColor(departure.lineColorBg) ?: fallbackBadgeColor(departure.lineName)
+    val lineForegroundColor = parseHexColor(departure.lineColorFg) ?: Color.White
+    val timeText = departure.expectedTime ?: departure.plannedTime
+    val timeColor = if (departure.isCancelled) StatusRed else FlapAmber
+
+    val delayText: String
+    val delayColor: Color
+    when {
+        departure.isCancelled -> {
+            delayText = "AUS"
+            delayColor = StatusRed
+        }
+        !departure.isRealtime -> {
+            delayText = "—"
+            delayColor = TextSecondary
+        }
+        (departure.delayMinutes ?: 0) == 0 -> {
+            delayText = "+0"
+            delayColor = StatusGreen
+        }
+        (departure.delayMinutes ?: 0) > 0 -> {
+            delayText = "+${departure.delayMinutes}"
+            delayColor = FlapAmber
+        }
+        else -> {
+            delayText = "${departure.delayMinutes}"
+            delayColor = StatusBlue
+        }
+    }
+
+    val metaText = buildString {
+        append("planned ").append(departure.plannedTime)
+        if (!departure.platform.isNullOrBlank()) append(" · Gl. ${departure.platform}")
+        if (!departure.remark.isNullOrBlank()) append(" · ${departure.remark}")
+    }
+
     Column(
         modifier
             .fillMaxWidth()
-            .padding(start = 12.dp, end = 12.dp, top = 7.dp, bottom = 7.dp)
+            .padding(start = 12.dp, end = 12.dp, top = 6.dp, bottom = 6.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            LineBadge(
-                lineName = departure.lineName,
-                lineColorBg = departure.lineColorBg,
-                lineColorFg = departure.lineColorFg
-            )
-            Spacer(Modifier.width(10.dp))
-            SplitFlapText(
-                text = boardDirectionText(departure.direction, directionCells),
-                cellWidth = 19.dp,
-                cellHeight = 27.dp,
-                staggerPerCellMillis = 28L,
-                startDelayMillis = rowStartDelay
-            )
-        }
-        Spacer(Modifier.height(6.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            SplitFlapText(
-                text = departure.expectedTime ?: departure.plannedTime,
-                cellWidth = 16.dp,
-                cellHeight = 22.dp,
-                staggerPerCellMillis = 28L,
-                startDelayMillis = rowStartDelay
+            SplitFlapSegment(
+                text = lineLabel,
+                height = 36.dp,
+                textColor = lineForegroundColor,
+                tileColor = lineBackgroundColor,
+                modifier = Modifier.width(58.dp),
+                staggerMillis = rowStagger
             )
             Spacer(Modifier.width(8.dp))
-            StatusChip(departure = departure)
-            Text(
-                text = "planned " + departure.plannedTime,
-                color = TextSecondary,
-                fontSize = 11.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textDecoration = if (departure.isCancelled) TextDecoration.LineThrough else null,
-                modifier = Modifier
-                    .weight(1f, fill = false)
-                    .padding(start = 8.dp)
+            SplitFlapSegment(
+                text = departure.direction.uppercase(),
+                height = 36.dp,
+                fontFamily = FontFamily.SansSerif,
+                modifier = Modifier.weight(1f),
+                staggerMillis = rowStagger + 40L
             )
-            if (!departure.platform.isNullOrBlank()) {
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    text = "Gl. ${departure.platform}",
-                    color = TextSecondary,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-        }
-        if (!departure.remark.isNullOrBlank()) {
-            Spacer(Modifier.height(3.dp))
-            Text(
-                text = departure.remark,
-                color = Color(0xFFB9BEC6),
-                fontSize = 10.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+            Spacer(Modifier.width(8.dp))
+            SplitFlapSegment(
+                text = timeText,
+                height = 36.dp,
+                textColor = timeColor,
+                modifier = Modifier.width(78.dp),
+                staggerMillis = rowStagger + 80L
+            )
+            Spacer(Modifier.width(8.dp))
+            SplitFlapSegment(
+                text = delayText,
+                height = 36.dp,
+                textColor = delayColor,
+                modifier = Modifier.width(52.dp),
+                staggerMillis = rowStagger + 120L
             )
         }
+        Text(
+            text = metaText,
+            color = if (departure.isCancelled) Color(0xFFB96A6A) else TextSecondary,
+            fontSize = 11.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textDecoration = if (departure.isCancelled) TextDecoration.LineThrough else null,
+            modifier = Modifier.padding(horizontal = 2.dp, vertical = 3.dp)
+        )
     }
-}
-
-private fun boardDirectionText(direction: String, cells: Int): String {
-    val stripped = direction
-        .removePrefix("S+U ")
-        .removePrefix("S ")
-        .removePrefix("U ")
-        .removePrefix("M ")
-    return stripped.uppercase().take(cells).padEnd(cells, ' ')
 }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -29,6 +30,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -223,3 +225,156 @@ fun ClockFlap(modifier: Modifier = Modifier) {
         modifier = modifier
     )
 }
+
+/**
+ * A single split-flap tile that flips over as a whole (around its horizontal
+ * seam) whenever [text], [textColor] or [tileColor] change. Much cheaper than
+ * one tile per character — used for line, destination, time and delay fields
+ * of a departure row.
+ */
+@Composable
+fun SplitFlapSegment(
+    text: String,
+    height: Dp,
+    modifier: Modifier = Modifier,
+    textColor: Color = FlapAmber,
+    tileColor: Color = FlapTile,
+    fontFamily: FontFamily = FontFamily.Monospace,
+    fontWeight: FontWeight = FontWeight.Bold,
+    animateInitial: Boolean = false,
+    flipDurationMillis: Int = 480,
+    staggerMillis: Long = 0L
+) {
+    val localDensity = LocalDensity.current
+    val fontSize = with(localDensity) { (height * 0.55f).toSp() }
+    var displayedText by remember { mutableStateOf(if (animateInitial) "" else text) }
+    var displayedTextColor by remember { mutableStateOf(textColor) }
+    var displayedTileColor by remember { mutableStateOf(tileColor) }
+    val progress = remember { Animatable(if (animateInitial) 0f else 1f) }
+
+    LaunchedEffect(text, textColor, tileColor) {
+        if (text != displayedText || textColor != displayedTextColor || tileColor != displayedTileColor) {
+            if (staggerMillis > 0) delay(staggerMillis)
+            progress.snapTo(0f)
+            progress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(flipDurationMillis, easing = FastOutSlowInEasing)
+            )
+            displayedText = text
+            displayedTextColor = textColor
+            displayedTileColor = tileColor
+        }
+    }
+
+    val p = progress.value
+    Box(
+        modifier
+            .height(height)
+            .background(FlapSlotColor, RoundedCornerShape(4.dp))
+            .border(width = 1.dp, color = FlapTileBorder, shape = RoundedCornerShape(4.dp))
+    ) {
+        when {
+            p >= 1f -> {
+                FlapFace(
+                    text = text,
+                    textColor = textColor,
+                    tileColor = tileColor,
+                    fontSize = fontSize,
+                    fontFamily = fontFamily,
+                    fontWeight = fontWeight,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+            p < 0.5f -> {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            rotationX = -180f * p
+                            transformOrigin = TransformOrigin(0.5f, 0.5f)
+                            cameraDistance = 12f * density
+                        }
+                ) {
+                    FlapFace(
+                        text = displayedText,
+                        textColor = displayedTextColor,
+                        tileColor = displayedTileColor,
+                        fontSize = fontSize,
+                        fontFamily = fontFamily,
+                        fontWeight = fontWeight,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
+            else -> {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            rotationX = -180f * p
+                            transformOrigin = TransformOrigin(0.5f, 0.5f)
+                            cameraDistance = 12f * density
+                        }
+                ) {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .graphicsLayer {
+                                rotationX = 180f
+                                transformOrigin = TransformOrigin(0.5f, 0.5f)
+                            }
+                    ) {
+                        FlapFace(
+                            text = text,
+                            textColor = textColor,
+                            tileColor = tileColor,
+                            fontSize = fontSize,
+                            fontFamily = fontFamily,
+                            fontWeight = fontWeight,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
+            }
+        }
+        Box(
+            Modifier
+                .align(Alignment.Center)
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(Color.Black.copy(alpha = 0.55f))
+        )
+    }
+}
+
+@Composable
+private fun FlapFace(
+    text: String,
+    textColor: Color,
+    tileColor: Color,
+    fontSize: TextUnit,
+    fontFamily: FontFamily,
+    fontWeight: FontWeight,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier
+            .background(tileColor, RoundedCornerShape(4.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            color = textColor,
+            fontSize = fontSize,
+            fontFamily = fontFamily,
+            fontWeight = fontWeight,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 8.dp)
+        )
+    }
+}
+
+private val FlapSlotColor = Color(0xFF101115)

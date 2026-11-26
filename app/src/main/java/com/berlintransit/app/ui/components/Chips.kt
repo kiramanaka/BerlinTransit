@@ -43,7 +43,7 @@ fun productColor(product: TransitProduct): Color = when (product) {
     TransitProduct.SUBURBAN -> Color(0xFF0B8A44)
     TransitProduct.SUBWAY -> Color(0xFF1746A2)
     TransitProduct.TRAM -> Color(0xFFCB171E)
-    TransitProduct.BUS -> Color(0xFF1D4E9B)
+    TransitProduct.BUS -> Color(0xFF732C8B)
     TransitProduct.FERRY -> Color(0xFF0F7CA8)
     TransitProduct.EXPRESS -> Color(0xFFC41E3A)
     TransitProduct.REGIONAL -> Color(0xFFA61E2A)

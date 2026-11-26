@@ -129,7 +129,6 @@ fun BoardScreen(
                 .padding(innerPadding)
         ) {
             val headerCells = ((maxWidth - 24.dp) / 19.dp).toInt().coerceAtLeast(8)
-            val directionCells = ((maxWidth - 84.dp) / 19.dp).toInt().coerceIn(8, 26)
             Column(Modifier.fillMaxSize()) {
                 BoardHeader(stopName = stopName, cells = headerCells)
                 when {
@@ -147,7 +146,7 @@ fun BoardScreen(
                         EmptyBoard()
                     }
                     else -> {
-                        DepartureList(state = state, directionCells = directionCells)
+                        DepartureList(state = state)
                     }
                 }
             }
@@ -215,13 +214,12 @@ private fun EmptyBoard() {
 }
 
 @Composable
-private fun DepartureList(state: BoardViewModel.BoardUiState, directionCells: Int) {
+private fun DepartureList(state: BoardViewModel.BoardUiState) {
     LazyColumn(Modifier.fillMaxSize()) {
         itemsIndexed(state.departures, key = { _, departure -> departure.key }) { index, departure ->
             DepartureRow(
                 departure = departure,
-                index = index,
-                directionCells = directionCells
+                index = index
             )
             if (index < state.departures.lastIndex) {
                 HorizontalDivider(
