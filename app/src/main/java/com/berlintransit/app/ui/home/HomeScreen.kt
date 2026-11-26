@@ -44,6 +44,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.berlintransit.app.AppContainer
+import com.berlintransit.app.data.MAX_FAVORITES
 import com.berlintransit.app.data.cleanStopName
 import com.berlintransit.app.ui.components.ClockFlap
 import com.berlintransit.app.ui.components.EmptyHintCard
@@ -182,13 +183,13 @@ fun HomeScreen(
 
             Spacer(Modifier.height(28.dp))
             SectionHeader(
-                "FAVORITES (${favorites.size}/3)",
+                "FAVORITES (${favorites.size}/$MAX_FAVORITES)",
                 Modifier.padding(horizontal = 20.dp)
             )
             Spacer(Modifier.height(8.dp))
             if (favorites.isEmpty()) {
                 EmptyHintCard(
-                    "Open a station and tap the star in its board to pin it here. Up to 3 stations.",
+                    "Open a station and tap the star in its board to pin it here. Up to $MAX_FAVORITES stations.",
                     Modifier.padding(horizontal = 16.dp)
                 )
             } else {

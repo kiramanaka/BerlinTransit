@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Berlin Transit</string>
+    <string name="widget_label">Berlin Transit Departures</string>
 </resources>

@@ -3,7 +3,8 @@
 A departure board app for the **Berlin-Brandenburg (VBB)** region with a classic
 **split-flap display** (Solari board) look: the nearest stations to your position,
 live departures with planned **and** expected times, station search, and up to
-3 favorite stations.
+10 favorite stations — plus **homescreen widgets** for a favorite station or the
+always-nearest station.
 
 Data comes from [v6.vbb.transport.rest](https://v6.vbb.transport.rest/), a free
 REST wrapper around VBB's HAFAS endpoint (realtime delays included, no API key).
@@ -20,7 +21,12 @@ REST wrapper around VBB's HAFAS endpoint (realtime delays included, no API key).
   - `CANCELLED` with struck-through planned time for cancelled trips
   - platform (`Gl.`), disruption/warning remarks, auto-refresh every 45 s
 - **Station search** — debounced fuzzy search across all VBB stops.
-- **Favorites** — star a station from its board, max 3, persisted via DataStore.
+- **Favorites** — star a station from its board, max 10, persisted via DataStore.
+- **Homescreen widgets** (Glance) — one widget per favorite station, or a widget
+  that always follows the nearest station. Updates every 30 minutes via
+  WorkManager, on tap, and whenever the app is opened. The nearest-station
+  widget refreshes in the background only if location is set to
+  "Allow all the time" for the app.
 
 ## Screens
 

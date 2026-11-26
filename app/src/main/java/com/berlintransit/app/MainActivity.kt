@@ -7,8 +7,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
+import com.berlintransit.app.ui.BerlinTransitTheme
 import com.berlintransit.app.ui.TransitApp
-import com.berlintransit.app.ui.theme.BerlinTransitTheme
+import com.berlintransit.app.widget.WidgetScheduler
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -24,6 +28,13 @@ class MainActivity : ComponentActivity() {
                     TransitApp(container = container)
                 }
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        lifecycleScope.launch(Dispatchers.IO) {
+            runCatching { WidgetScheduler.refreshAllWidgets(applicationContext) }
         }
     }
 }

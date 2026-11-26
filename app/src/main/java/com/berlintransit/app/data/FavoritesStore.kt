@@ -16,7 +16,7 @@ data class FavoriteEntry(val id: String, val name: String)
 
 enum class FavoriteToggleResult { Added, Removed, LimitReached }
 
-const val MAX_FAVORITES = 3
+const val MAX_FAVORITES = 10
 
 fun toggleFavoriteEntry(
     current: List<FavoriteEntry>,

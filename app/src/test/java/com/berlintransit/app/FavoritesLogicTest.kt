@@ -16,26 +16,25 @@ class FavoritesLogicTest {
 
     @Test
     fun `stations can be added up to the maximum`() {
-        val (one, r1) = toggleFavoriteEntry(emptyList(), alex)
-        assertEquals(FavoriteToggleResult.Added, r1)
-        assertEquals(1, one.size)
+        var current = emptyList<FavoriteEntry>()
+        repeat(MAX_FAVORITES) { index ->
+            val (updated, result) = toggleFavoriteEntry(current, FavoriteEntry("id$index", "Stop $index"))
+            assertEquals(FavoriteToggleResult.Added, result)
+            current = updated
+        }
+        assertEquals(MAX_FAVORITES, current.size)
 
-        val (two, r2) = toggleFavoriteEntry(one, hbf)
-        assertEquals(FavoriteToggleResult.Added, r2)
-        assertEquals(2, two.size)
-
-        val (three, r3) = toggleFavoriteEntry(two, potsdam)
-        assertEquals(FavoriteToggleResult.Added, r3)
-        assertEquals(3, three.size)
-        assertEquals(MAX_FAVORITES, three.size)
+        val (rejected, result) = toggleFavoriteEntry(current, FavoriteEntry("overflow", "Overflow"))
+        assertEquals(FavoriteToggleResult.LimitReached, result)
+        assertEquals(MAX_FAVORITES, rejected.size)
     }
 
     @Test
-    fun `fourth station is rejected`() {
-        val favorites = listOf(alex, hbf, potsdam)
-        val (updated, result) = toggleFavoriteEntry(favorites, ostkreuz)
+    fun `custom smaller limits are enforced`() {
+        val current = listOf(alex, hbf)
+        val (updated, result) = toggleFavoriteEntry(current, potsdam, max = 2)
         assertEquals(FavoriteToggleResult.LimitReached, result)
-        assertEquals(favorites, updated)
+        assertEquals(current, updated)
     }
 
     @Test

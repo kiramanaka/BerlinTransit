@@ -7,6 +7,7 @@ import com.berlintransit.app.data.TransitRepository
 import com.berlintransit.app.data.api.ApiJson
 import com.berlintransit.app.data.api.VbbApi
 import com.berlintransit.app.location.LocationProvider
+import com.berlintransit.app.widget.WidgetScheduler
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -41,5 +42,6 @@ class BerlinTransitApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
+        WidgetScheduler.ensurePeriodicUpdates(this)
     }
 }

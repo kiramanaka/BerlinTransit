@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.berlintransit.app.AppContainer
 import com.berlintransit.app.data.DepartureUi
 import com.berlintransit.app.data.FavoriteToggleResult
+import com.berlintransit.app.data.MAX_FAVORITES
 import com.berlintransit.app.ui.toUserMessage
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -76,7 +77,7 @@ class BoardViewModel(
                 FavoriteToggleResult.Removed ->
                     _events.tryEmit("$stopName removed from favorites")
                 FavoriteToggleResult.LimitReached ->
-                    _events.tryEmit("Favorites are limited to 3 stations")
+                    _events.tryEmit("Favorites are limited to $MAX_FAVORITES stations")
             }
         }
     }
