@@ -165,9 +165,6 @@ private fun BoardHeader(stopName: String, cells: Int) {
             text = stopName.uppercase().let { it.take(cells).padEnd(cells, ' ') },
             cellWidth = 19.dp,
             cellHeight = 27.dp,
-            animateInitial = true,
-            startDelayMillis = 40L,
-            staggerPerCellMillis = 40L,
             modifier = Modifier.padding(horizontal = 12.dp)
         )
         Row(
@@ -206,7 +203,7 @@ private fun LoadingBoard() {
 private fun EmptyBoard() {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(
-            text = "No departures in the next 60 minutes",
+            text = "No departures in the next 24 hours",
             color = TextSecondary,
             fontSize = 13.sp
         )
@@ -216,11 +213,8 @@ private fun EmptyBoard() {
 @Composable
 private fun DepartureList(state: BoardViewModel.BoardUiState) {
     LazyColumn(Modifier.fillMaxSize()) {
-        itemsIndexed(state.departures, key = { _, departure -> departure.key }) { index, departure ->
-            DepartureRow(
-                departure = departure,
-                index = index
-            )
+        itemsIndexed(state.departures, key = { _, departure -> departure.key }) { _, departure ->
+            DepartureRow(departure = departure)
             if (index < state.departures.lastIndex) {
                 HorizontalDivider(
                     color = Color(0xFF191B20),

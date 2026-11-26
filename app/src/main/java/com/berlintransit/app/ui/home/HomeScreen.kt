@@ -100,8 +100,7 @@ fun HomeScreen(
                 SplitFlapText(
                     text = "BERLIN TRANSIT",
                     cellWidth = 19.dp,
-                    cellHeight = 27.dp,
-                    animateInitial = true
+                    cellHeight = 27.dp
                 )
             }
             Spacer(Modifier.height(10.dp))

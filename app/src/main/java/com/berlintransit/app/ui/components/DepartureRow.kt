@@ -1,5 +1,6 @@
 package com.berlintransit.app.ui.components
 
+import android.graphics.Typeface
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,17 +23,17 @@ import com.berlintransit.app.ui.theme.BvgYellow
 import com.berlintransit.app.ui.theme.StatusBlue
 import com.berlintransit.app.ui.theme.StatusGreen
 import com.berlintransit.app.ui.theme.StatusRed
+import com.berlintransit.app.ui.theme.TextPrimary
 import com.berlintransit.app.ui.theme.TextSecondary
 
 private val FlapHeight = 30.dp
+private val CondensedBold = FontFamily(Typeface.create("sans-serif-condensed", Typeface.BOLD))
 
 @Composable
 fun DepartureRow(
     departure: DepartureUi,
-    index: Int,
     modifier: Modifier = Modifier
 ) {
-    val rowStagger = index * 60L
     val lineLabel = departure.lineName.replace(" ", "").take(4)
     val (lineBackgroundColor, lineForegroundColor) = lineBadgeColors(
         lineName = departure.lineName,
@@ -67,9 +68,10 @@ fun DepartureRow(
         }
     }
 
+    val platformText = departure.platform?.take(3).orEmpty()
+
     val metaText = buildString {
         append("planned ").append(departure.plannedTime)
-        if (!departure.platform.isNullOrBlank()) append(" · Gl. ${departure.platform}")
         if (!departure.remark.isNullOrBlank()) append(" · ${departure.remark}")
     }
 
@@ -84,16 +86,15 @@ fun DepartureRow(
                 height = FlapHeight,
                 textColor = lineForegroundColor,
                 tileColor = lineBackgroundColor,
-                modifier = Modifier.width(56.dp),
-                staggerMillis = rowStagger
+                modifier = Modifier.width(56.dp)
             )
             Spacer(Modifier.width(8.dp))
             SplitFlapSegment(
                 text = departure.direction.uppercase(),
                 height = FlapHeight,
                 fontFamily = FontFamily.SansSerif,
-                modifier = Modifier.weight(1f),
-                staggerMillis = rowStagger + 40L
+                condensedFontFamily = CondensedBold,
+                modifier = Modifier.weight(1f)
             )
         }
         Spacer(Modifier.height(4.dp))
@@ -102,16 +103,21 @@ fun DepartureRow(
                 text = timeText,
                 height = FlapHeight,
                 textColor = timeColor,
-                modifier = Modifier.width(72.dp),
-                staggerMillis = rowStagger + 80L
+                modifier = Modifier.width(72.dp)
             )
             Spacer(Modifier.width(6.dp))
             SplitFlapSegment(
                 text = delayText,
                 height = FlapHeight,
                 textColor = delayColor,
-                modifier = Modifier.width(48.dp),
-                staggerMillis = rowStagger + 120L
+                modifier = Modifier.width(48.dp)
+            )
+            Spacer(Modifier.width(6.dp))
+            SplitFlapSegment(
+                text = platformText,
+                height = FlapHeight,
+                textColor = TextPrimary,
+                modifier = Modifier.width(40.dp)
             )
             Spacer(Modifier.width(10.dp))
             Text(
