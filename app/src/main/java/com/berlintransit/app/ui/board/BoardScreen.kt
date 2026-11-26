@@ -213,7 +213,7 @@ private fun EmptyBoard() {
 @Composable
 private fun DepartureList(state: BoardViewModel.BoardUiState) {
     LazyColumn(Modifier.fillMaxSize()) {
-        itemsIndexed(state.departures, key = { _, departure -> departure.key }) { _, departure ->
+        itemsIndexed(state.departures, key = { _, departure -> departure.key }) { index, departure ->
             DepartureRow(departure = departure)
             if (index < state.departures.lastIndex) {
                 HorizontalDivider(
